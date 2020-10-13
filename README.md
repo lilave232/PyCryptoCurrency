@@ -1,5 +1,4 @@
-# PyCurrency
-![Alt text](https://github.com/lilave232/PyCurrency/blob/master/PyCurrency.png "Title")
+# ![Alt text](https://github.com/lilave232/PyCurrency/blob/master/PyCurrency.png "Title")
 A python project designed to setup a crypto currency network
 
 ## Installation
