@@ -1,10 +1,15 @@
 import tkinter as tk
-from tkmacosx import Button
+import platform
 from cryptography.ecdhcrypto import *
 from cryptography.block_helper import *
 from cryptography.P2PNetNode import *
 from cryptography.P2PNetWallet import *
 from tkinter import filedialog
+
+if platform.system() == "Darwin":
+    from tkmacosx import Button
+else:
+    from tkinter import Button
 
 import os
 
