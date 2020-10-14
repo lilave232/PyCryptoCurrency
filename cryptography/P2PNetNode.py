@@ -205,12 +205,11 @@ class P2PNetNode:
     
     def ClientThread(self, conn, addr): 
         
-        while True: 
-                
+        while True:
 
                 length = int.from_bytes(conn.recv(8),'big')
 
-
+                print(length)
 
                 if length > 2048:
 
@@ -224,6 +223,8 @@ class P2PNetNode:
 
                         message += conn.recv(recv_amount)
 
+                        print(message)
+
                         recv_length += 2048
 
                         if (recv_length + 2048 > length):
@@ -233,6 +234,8 @@ class P2PNetNode:
                 else:
 
                     message = conn.recv(length)
+
+                    print(message)
                 
                 if message:
 
@@ -245,10 +248,7 @@ class P2PNetNode:
 
                         if json_message['Address'] + ":" + str(json_message['Port']) not in self.peer_services:
 
-                            print("Sending Server Information")
-                            print(message.decode('utf-8'))
-
-                            threading.Thread(target=self.start_client,args=(json_message["Address"],json_message["Port"])).start()
+                            threading.Thread(target=self.start_client,args=(json_message['Address'],json_message["Port"])).start()
 
                             self.broadcast_server_to_client(message.decode('utf-8'), conn)
                         
@@ -323,17 +323,18 @@ class P2PNetNode:
                         #CHECKING IF BLOCK CONFIRMATIONS MEETS MINIMUM NUMBER OF CONFIRMATIONS
                         if self.pending_block_hashes[block_hash.hex()] >= self.BLOCK_MIN_CONFIRMATIONS and block_hash.hex() not in self.block_hashes and self.block_saving == False:
 
+                            self.block_saving = True
+
                             self.block_confirmations = 0 #RESET BLOCK CONFIRMATIONS TO ZERO
 
                             self.pending_block_hashes = {} #RESET PENDING BLOCK CONFIRMATIONS TO BLANK
 
                             self.node_target = None #SET TARGET BACK TO NONE
-
-                            self.block_saving = True
+                            print("Target Set To None 331")
 
                             self.block_added = True
 
-                            print("SAVING BLOCK 1")
+                            print("SAVING BLOCK")
 
                             save_block(self.chain_directory,json_message['Block']) #WRITE BLOCK TO CHAIN FILE
                             
@@ -442,6 +443,7 @@ class P2PNetNode:
                     self.print("CONNECTION BROKEN")
 
                     break
+                
 
     def send_peers_wo_servers(self,message):
 
@@ -529,6 +531,8 @@ class P2PNetNode:
 
         self.main_server.settimeout(0.1)
 
+        #self.main_server.setblocking(0)
+        
         self.print("Listening on port:{0}".format(server_port))
 
         self.list_of_clients = [] #ESTABLISH CLIENT LISTING
@@ -579,16 +583,22 @@ class P2PNetNode:
             self.peer_clients.append(client) #ADD CLIENT TO LIST OF CLIENTS
             
         except:
-            
+
             self.print("Connection Broken")
-            #raise Exception("Connection Broken")
+            raise Exception("Connection Broken")
             return
         
         while True:
             #ENABLE NON BLOCKING SERVER MESSAGE RECEIPT SHOULD RUN IN PARALLEL SO THAT MESSAGES DON'T GET DROPPED
-            
-            try:
+            #sockets_list = self.peer_clients #GET LIST OF SOCKETS
 
+            #read_sockets,write_socket, error_socket = select.select(sockets_list,[],[]) #RUN SELECT TO SPLIT SOCKET INTO WRITE SOCKET AND READ SOCKET
+
+            #for socks in read_sockets:
+
+            #    if socks == client:
+            try:
+        
                 length = int.from_bytes(client.recv(8),'big')
 
                 if length > 2048:
@@ -615,6 +625,7 @@ class P2PNetNode:
 
                     message = client.recv(length)
 
+
                 if message == b'': #IF MESSAGE RECEIVED CONTAINS NO BYTES CLIENT DISCONNECTED
 
                     self.peer_services.remove(connect_address + ":" + str(connect_port)) #REMOVE VALUE FROM PEER SERVICES
@@ -626,6 +637,8 @@ class P2PNetNode:
                     self.print("Connection Broken")
 
                     return
+
+                print(message)
 
                 if message: #MESSAGE WAS RECEIVED
 
@@ -693,6 +706,8 @@ class P2PNetNode:
                             self.block_confirmations = 0 #RESET BLOCK CONFIRMATIONS TO ZERO
 
                             self.pending_block_hashes = {} #RESET PENDING BLOCK CONFIRMATIONS TO BLANK
+
+                            print("Setting Target to None")
 
                             self.node_target = None #SET TARGET BACK TO NONE
 
@@ -788,8 +803,7 @@ class P2PNetNode:
                             self.block_thread = False #RELEASE MAIN THREAD
             except socket.timeout:
                 continue
-                
-                            
+                                                    
         #IF THREAD BREAKS CLOSE SERVER           
         server.close()
 
@@ -806,8 +820,6 @@ class P2PNetNode:
             #CONFIRM SIGNATURE
             block_hash = hash_block_dict(block) #HASH BLOCK
 
-            print("Confirming Block")
-
             pubKey = pub_key_from_string(pubKey) #GENERATE PUBKEY OBJECT FROM STRING
 
             verify_msg(bytes.fromhex(signature),block_hash,pubKey) #VERIFY SIGNATURE PROVIDE TO CONFIRM BLOCK IS THE SAME AS IT WAS SENT AND OWNERSHIP OF BLOCK IS CORRECT FOR MINING REWARD
@@ -822,7 +834,7 @@ class P2PNetNode:
             assert (block['prev_block_hash'] == previous_hash) #ENSURE PREVIOUS HASH IS SAME AS PREVIOUS HASH ON BLOCK
             
             #CHECK TIME
-            assert (block['time'] <= int(time.time()) and block['time'] >= int(time.time()) - 3600) #ENSURE TIME IS CORRECT BLOCKS WITH TIME GREATER THAN CURRENT TIME OR BLOCKS NOT CONFIRMED AFTER AN HOUR WILL NOT BE CONFIRMED
+            assert (block['time'] <= int(time.time() + 20*60) and block['time'] >= int(time.time()) - 3600) #ENSURE TIME IS CORRECT BLOCKS WITH TIME GREATER THAN CURRENT TIME OR BLOCKS NOT CONFIRMED AFTER AN HOUR WILL NOT BE CONFIRMED
             
             #VERIFY TRANSACTIONS
             assert (len(block['txns'][0]['inputs']) == 1 and len(block['txns'][0]['outputs']) == 1) #VERIFY COINBASE TRANSACTION HAS ONE INPUT AND ONE OUTPUT
@@ -872,12 +884,16 @@ class P2PNetNode:
             assert (len(bytes.fromhex(block['txns'][0]['txnid'])) == 16)
 
             #CHECK BLOCK HASH IS BELOW TARGET
+            print("TARGET IS:",self.node_target)
+            print(self.block_saving)
+            print(block_hash.hex() in self.block_hashes)
             if self.block_saving == True or block_hash.hex() in self.block_hashes:
-                json_message = {"Type":10, "Block":block}
+                json_message = {"Type":10,"Block":block} #PREPARE MESSAGE TO SEND
+
                 message = self.prepare_message(json.dumps(json_message))
+
                 client.send(message)
                 return
-
             assert (block_hash < (bytes.fromhex(self.node_target) + bytearray(28)))
 
             #CHECK OTHER TRANSACTIONS ONLY AFTER CONFIRMATION ARE THESE ADDED SO RISK IS LOWER
@@ -921,8 +937,7 @@ class P2PNetNode:
                 self.block_added = True
 
                 self.node_target = None #SET TARGET BACK TO NONE
-
-                print(block)
+                print("Setting Target To None")
 
                 print("SAVING BLOCK 3")
                 
@@ -978,6 +993,8 @@ class P2PNetNode:
         
         self.block_confirmations = 0 #SET CONFIRMATIONS TO ZERO
         
+        print("Resetting Target")
+
         self.node_target = None #RESET TARGET TO NONE
 
         self.broadcast_client_to_server(json.dumps({'Type':8})) #SEND MESSAGE REQUESTING TARGET VALUE FOR BLOCK
@@ -1023,17 +1040,17 @@ class P2PNetNode:
 
         json_message = {"Type":7,"Block":block,"PubKey":priv_key.verifying_key.to_string().hex(),"Signature":block_sig} #ESTABLISH MESSAGE TO SEND TO NODES FOR CONFIRMATION
 
+        print("SENDING 7")
+        print("Message:",json_message)
+        length = len(json.dumps(json_message).encode()).to_bytes(8, byteorder='big')
+        print(length)
+
         if block_hash.hex() in self.pending_block_hashes:
             self.pending_block_hashes[block_hash.hex()] += 1 #ADD BLOCK HASH TO PENDING HASHES
         else:
             self.pending_block_hashes[block_hash.hex()] = 1 
 
         self.broadcast_client_to_server(json.dumps(json_message)) #SEND MESSAGE ASKING FOR CONFIRMATION
-
-        length = len(json.dumps(json_message).encode()).to_bytes(8, byteorder='big')
-        print("TYPE 7 SENT")
-        print(length)
-        print(json.dumps(json_message))
 
         while self.block_thread: #BLOCK THREAD WAITING FOR CONFIRMATIONS
 
@@ -1113,7 +1130,7 @@ class P2PNetNode:
             #CHECK ID FORMAT
             assert (len(bytes.fromhex(txn['txnid'])) == 16) #ENSURE TXID IS 16 BYTE INTEGER
             #CHECK TIME
-            assert (txn['time'] <= int(time.time()) and txn['time'] >= int(time.time()) - 3600) #ENSURE TXN IS NOT FROM FUTURE AND NOT FROM AN HOUR IN THE PAST
+            assert (txn['time'] <= int(time.time() + 20*60) and txn['time'] >= int(time.time()) - 3600) #ENSURE TXN IS NOT FROM FUTURE AND NOT FROM AN HOUR IN THE PAST
             #CHECK INPUTS
             assert (len(txn['inputs']) > 0) #AT LEAST ONE INPUT IN TRANSACTION
 
@@ -1184,4 +1201,4 @@ class P2PNetNode:
             if txn['txnid'] in self.txn_confirmations:
                 del self.txn_confirmations[txn['txnid']]
             self.print("Unable to Confirm Transaction")
-            #raise Exception("Unable to Complete Transaction")
+            raise Exception("Unable to Complete Transaction")
