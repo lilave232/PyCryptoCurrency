@@ -27,6 +27,7 @@ import time
 import random
 
 import tkinter as tk
+import sys, signal
 
 class P2PNetNode:
 
@@ -585,7 +586,7 @@ class P2PNetNode:
         except:
 
             self.print("Connection Broken")
-            raise Exception("Connection Broken")
+            #raise Exception("Connection Broken")
             return
         
         while True:
@@ -676,8 +677,20 @@ class P2PNetNode:
                     #IF CHAIN HAS BEEN FULLY DOWNLOADED NETWORK REQUESTS A TARGET FOR THE NEXT BLOCK
                     elif json_message['Type'] == 8 and self.chain_downloaded and self.node_target == None:
                         #NO TARGET HAS BEEN ESTABLISHED GENERATE TARGET
-                        
-                        random_number = random.randint(65530,65535)#4096#16777216)#,286331153)#572662306)#1431655765)#268435456,#858993459) #TARGET IS A 8 BYTE INTEGER
+                        lower_bound = 5000
+                        upper_bound = 10000
+                        if len(self.peer_services) > 1:
+                            lower_bound = 10000
+                            upper_bound = 20000
+                        elif len(self.peer_services) > 2:
+                            lower_bound = 5000
+                            upper_bound = 20000
+                        elif len(self.peer_services) > 10:
+                            lower_bound = 2500
+                            upper_bound = 20000
+
+            
+                        random_number = random.randint(lower_bound,upper_bound)#4096#16777216)#,286331153)#572662306)#1431655765)#268435456,#858993459) #TARGET IS A 8 BYTE INTEGER
 
                         target = random_number.to_bytes(4, byteorder='big').hex() #FORMAT RANDOM NUMBER TO HEX VALUE
 
@@ -976,14 +989,19 @@ class P2PNetNode:
 
             self.print("Unable to Confirm Block")
 
-            raise Exception("BLOCK ERROR")
-            
-
-        
-            
+            raise Exception("BLOCK ERROR")    
         
 
-    def chain_mine(self):
+    def chain_mine(self,loop_mine=False,wait=False):
+
+        
+        if loop_mine == True:
+            while len(self.peer_services) == 0:
+                continue
+            if wait == True:
+                time.sleep(10)
+
+        self.download_chain()
 
         if self.connect_server == False:
             self.print("Cannot Mine Must Connect Server!")
@@ -1063,6 +1081,9 @@ class P2PNetNode:
             continue
         
         self.print("Block Mined On Chain!!!")
+
+        if loop_mine:
+            self.chain_mine(True)
         
     #SEND TRANSACTION TO NETWORK
     def send_transaction(self,txn,pubKeys):
