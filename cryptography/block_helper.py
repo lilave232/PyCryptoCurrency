@@ -42,9 +42,9 @@ def get_txn(txnid,directory):
         
         if ".pkl" in filename: #LOOK SPECIFICALLY FOR PKL FILES
 
-            with open(filename, 'rb') as handle: #OPEN FILE FOR READING
+            with open(filename, 'r') as handle: #OPEN FILE FOR READING
 
-                b = pickle.load(handle) #LOAD PICKLE DATA
+                b = json.load(handle) #LOAD PICKLE DATA
 
                 for txn in b['txns']: #FOR TXN IN TXNS
 
@@ -106,9 +106,11 @@ def save_block(dir,block): #SAVE NEW BLOCK
 
         i += 1 #INCREMENT COUNTER
 
-    with open(os.path.join(dir,"blk%s.pkl" % i), 'wb') as handle: #OPEN FILE FOR WRITING
+    with open(os.path.join(dir,"blk%s.pkl" % i), 'w') as handle: #OPEN FILE FOR WRITING
 
-        pickle.dump(block, handle) #SAVE BLOCK
+        json.dump(block, handle)
+
+        #pickle.dump(block, handle) #SAVE BLOCK
 
 def gen_block(target, pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
     

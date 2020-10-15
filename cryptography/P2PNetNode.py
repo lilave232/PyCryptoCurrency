@@ -175,9 +175,9 @@ class P2PNetNode:
 
                 self.chain_size += os.path.getsize(filename)
 
-                with open(filename, 'rb') as handle:
+                with open(filename, 'r') as handle:
 
-                    b = pickle.load(handle)
+                    b = json.load(handle)
 
                     block_hash = hash_block_dict(b)
 
@@ -364,9 +364,9 @@ class P2PNetNode:
                     #USER HAS REQUESTED BLOCK FILE INFORMATION
                     elif json_message['Type'] == 12:
                         
-                        with open(os.path.join(self.chain_directory,json_message['File']), 'rb') as handle: #OPEN REQUESTED FILE
+                        with open(os.path.join(self.chain_directory,json_message['File']), 'r') as handle: #OPEN REQUESTED FILE
                             
-                            b = pickle.load(handle) #LOAD REQUESTED
+                            b = json.load(handle) #LOAD REQUESTED
 
                             return_message = {"Type":12,"Filename":json_message['File'],"Block":b} #PREPARE MESSAGE TO SEND TO CLIENT
 

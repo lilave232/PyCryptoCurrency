@@ -93,9 +93,9 @@ class P2PWallet:
 
             if ".pkl" in filename: #IF FILENAME HAS .PKL BLOCK EXTENSION
 
-                with open(filename, 'rb') as handle: #OPEN FILE FOR READING
+                with open(filename, 'r') as handle: #OPEN FILE FOR READING
 
-                    b = pickle.load(handle) #LOAD FILE TO DICTIONARY
+                    b = json.load(handle) #LOAD FILE TO DICTIONARY
 
                     for txn in b['txns']: #LOOP THROUGH TRANSACTIONS
 
