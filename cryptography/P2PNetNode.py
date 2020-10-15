@@ -26,12 +26,16 @@ import time
 
 import random
 
-import tkinter as tk
 import sys, signal
 
 class P2PNetNode:
 
     def __init__(self,server_address,connect_address,initial_port,server_port,chain_directory = "chain", use_gui = False, listbox = None, connect_server = True):
+
+
+        if use_gui:
+            import tkinter as tk
+
         #CONNECTION BASED VARIABLES
         self.server_address = server_address
         self.connect_address = connect_address
