@@ -222,8 +222,6 @@ class P2PNetNode:
 				length = int.from_bytes(conn.recv(8),'big')
 				time.sleep(1)
 
-				print(length)
-
 				if length > 2048:
 
 					recv_length = 0
@@ -249,8 +247,6 @@ class P2PNetNode:
 
 					message = conn.recv(length)
 					time.sleep(1)
-
-					print(message)
 				
 				if message:
 
@@ -264,16 +260,6 @@ class P2PNetNode:
 						if json_message['Address'] + ":" + str(json_message['Port']) not in self.peer_services:
 
 							threading.Thread(target=self.start_client,args=(json_message['Address'],json_message["Port"])).start()
-
-							if self.node_target != None:
-
-								self.print("Sending Target:{0}".format(self.node_target))
-								#SEND TARGET
-								json_message = {'Type':9,'Target':self.node_target}
-
-								message = self.prepare_message(json.dumps(json_message))
-
-								conn.send(message)
 
 							self.broadcast_server_to_client(message.decode('utf-8'), conn)
 						
@@ -594,6 +580,12 @@ class P2PNetNode:
 
 				client.send(message) #SEND MESSAGE TO TO SERVER
 
+				json_dict = {"Type":8}
+
+				message = self.prepare_message(json.dumps(json_dict)) #PREPARE MESSAGE
+
+				client.send(message) #SEND MESSAGE TO TO SERVER
+
 			else:
 
 				json_dict = {"Type":17} #NO SERVER INFO TO SEND
@@ -662,8 +654,6 @@ class P2PNetNode:
 				self.print("Connection Broken")
 
 				return
-
-			print(message)
 
 			if message: #MESSAGE WAS RECEIVED
 
