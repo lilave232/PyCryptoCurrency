@@ -850,7 +850,7 @@ class P2PNetNode:
 
 							self.block_thread = False #RELEASE MAIN THREAD
 			except:
-				print("Exception")
+				#print("Exception")
 				continue
 													
 		#IF THREAD BREAKS CLOSE SERVER           
