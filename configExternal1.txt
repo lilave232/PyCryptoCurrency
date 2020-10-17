@@ -1,0 +1,1 @@
+{"Connect Address": "1adirondack.416nvr.com", "Connect Port": 2666, "Server Address": "192.168.0.152", "Server Port": 2666, "Connect Server": true, "Chain": "chain1", "Keys": "keys"}

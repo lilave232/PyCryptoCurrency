@@ -681,11 +681,11 @@ class P2PNetNode:
                     #IF CHAIN HAS BEEN FULLY DOWNLOADED NETWORK REQUESTS A TARGET FOR THE NEXT BLOCK
                     elif json_message['Type'] == 8 and self.chain_downloaded and self.node_target == None:
                         #NO TARGET HAS BEEN ESTABLISHED GENERATE TARGET
-                        lower_bound = 5000
-                        upper_bound = 10000
+                        lower_bound = 500#1000 #ONE BLOCK EVERY 5 MINUTES
+                        upper_bound = 1000#2000 #ONE BLOCK EVERY 5 MINUTES
                         if len(self.peer_services) > 1:
-                            lower_bound = 10000
-                            upper_bound = 20000
+                            lower_bound = 2000
+                            upper_bound = 4000
                         elif len(self.peer_services) > 2:
                             lower_bound = 5000
                             upper_bound = 20000
@@ -782,11 +782,11 @@ class P2PNetNode:
                             #raise Exception("Chain Corrupted") RAISE EXCEPTION IF NECESSARY
                         
                         #IF ASSERTION SUCCESSFUL OPEN FILE TO WRITE TO
-                        with open(os.path.join(self.chain_directory,json_message['Filename']), 'wb') as handle:
+                        with open(os.path.join(self.chain_directory,json_message['Filename']), 'w') as handle:
 
                             b = json_message['Block'] #LOAD BLOCK FROM RECEIVED MESSAGE
 
-                            pickle.dump(b, handle) #SAVE BLOCK TO CHAIN LOCATION
+                            json.dump(b, handle) #SAVE BLOCK TO CHAIN LOCATION
 
                         block_hash = hash_block_dict(b)
 
@@ -1074,11 +1074,16 @@ class P2PNetNode:
 
         self.broadcast_client_to_server(json.dumps(json_message)) #SEND MESSAGE ASKING FOR CONFIRMATION
 
+        timeout = time.time() + 60*5
+
         while self.block_thread: #BLOCK THREAD WAITING FOR CONFIRMATIONS
 
-            if self.block_confirmations == -1: #IF AT ANY POINT CONFIRMATIONS -1 BLOCK CONTAINED AN ERROR
+            if self.block_confirmations == -1 or time.time() > timeout: #IF AT ANY POINT CONFIRMATIONS -1 BLOCK CONTAINED AN ERROR
 
                 self.print("Could Not Mine Block")
+
+                if loop_mine:
+                    self.chain_mine(True)
 
                 return
 
