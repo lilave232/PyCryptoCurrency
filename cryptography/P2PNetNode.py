@@ -549,6 +549,8 @@ class P2PNetNode:
 
 		self.main_server.listen(100) #LISTEN TO SOCKET AND QUEUE AS MANY AS 100 CONNECT REQUESTS
 
+		self,main_server.settimeout(0.1)
+
 		#self.main_server.setblocking(0)
 		
 		self.print("Listening on port:{0}".format(server_port))
@@ -571,8 +573,9 @@ class P2PNetNode:
 		client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #OPEN SOCKET CLIENT
 
 		try:
-			time.sleep(1)
+			
 			client.connect((connect_address, connect_port)) #CONNECT TO SERVER
+			client.settimeout(0.1)
 			
 			
 
