@@ -220,10 +220,7 @@ class P2PNetNode:
 	def ClientThread(self, conn, addr): 
 		
 		while True:
-
-				while self.chain_downloading:
-					continue
-
+			
 				length = int.from_bytes(conn.recv(8),'big')
 				time.sleep(1)
 
@@ -612,9 +609,6 @@ class P2PNetNode:
 		
 		while True:
 
-
-			while self.chain_downloading:
-				continue
 			#ENABLE NON BLOCKING SERVER MESSAGE RECEIPT SHOULD RUN IN PARALLEL SO THAT MESSAGES DON'T GET DROPPED
 			#sockets_list = self.peer_clients #GET LIST OF SOCKETS
 
