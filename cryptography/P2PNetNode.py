@@ -207,7 +207,7 @@ class P2PNetNode:
 
 					prev_hash = bytearray(32).hex()
 
-					if len(self.block_hashes) > 0 and i - 1 >= 0:
+					if len(self.block_hashes) > i and i - 1 >= 0:
 
 						prev_hash = self.block_hashes[i - 1]
 
@@ -374,7 +374,7 @@ class P2PNetNode:
 						self.pending_block_hashes = {} #RESET PENDING BLOCK CONFIRMATIONS TO BLANK
 
 						self.node_target = None #SET TARGET BACK TO NONE
-						print("Target Set To None 331")
+						print("Target Set To None")
 
 						self.block_added = True
 
