@@ -277,6 +277,16 @@ class P2PNetNode:
 				#GET BLOCKCHAIN SIZE
 				elif json_message['Type'] == 2 and self.chain_downloaded:
 
+					if self.mining:
+
+						json_return = {'Type':3,'Chain_Size':self.chain_size}
+
+						message = self.prepare_message(json.dumps(json_return))
+
+						conn.send(message)
+
+						continue
+
 					self.block_thread = True
 
 					self.update_chain()
