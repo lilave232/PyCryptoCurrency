@@ -568,7 +568,7 @@ class P2PNetNode:
 		while True:
 
 			#ENABLE NON BLOCKING SERVER MESSAGE RECEIPT SHOULD RUN IN PARALLEL SO THAT MESSAGES DON'T GET DROPPED
-			#sockets_list = self.peer_clients #GET LIST OF SOCKETS
+			sockets_list = self.peer_clients #GET LIST OF SOCKETS
 
 			read_sockets,write_socket, error_socket = select.select(sockets_list,[],[]) #RUN SELECT TO SPLIT SOCKET INTO WRITE SOCKET AND READ SOCKET
 
