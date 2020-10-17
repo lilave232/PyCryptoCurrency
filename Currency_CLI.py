@@ -9,7 +9,7 @@ node = None
 wallet = None
 config = None
 
-configuration = {"Connect Address":"localhost","Connect Port":8000,"Server Address":"localhost","Server Port":2666,"Connect Server":False, "Chain":"chain1", "Keys":"keys"}
+configuration = {"Connect Address":"localhost","Connect Port":8000,"Internal Server Address":"localhost","Internal Server Port":2666,"External Server Address":False,"External Server Port":False,"Connect Server":False, "Chain":"chain1", "Keys":"keys"}
 
 if os.path.exists("config.txt"):
     with open("config.txt","r") as f:
@@ -75,7 +75,13 @@ def process_commands(command_entry):
 
         wallet = P2PWallet()
         print("Attempting To Connect...")
-        node = P2PNetNode(configuration["Server Address"],configuration["Connect Address"],configuration["Connect Port"],configuration["Server Port"],configuration["Chain"],use_gui=False,connect_server=configuration["Connect Server"])
+        external_server_address = False
+        external_server_port = False
+        if "External Server Address" in configuration and "External Server Port" in configuration:
+            external_server_address = configuration["External Server Address"]
+            external_server_port = configuration["External Server Port"]
+
+        node = P2PNetNode(configuration["Internal Server Address"],configuration["Connect Address"],configuration["Connect Port"],configuration["Internal Server Port"],configuration["Chain"],use_gui=False,connect_server=configuration["Connect Server"],external_server=external_server_address,external_server_port=external_server_port)
         node.download_chain()
         node.update_pool()
         wallet.update_key_location(configuration["Keys"])

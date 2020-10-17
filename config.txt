@@ -1,1 +1,1 @@
-{"Connect Address": "localhost", "Connect Port": 8000, "Server Address": "localhost", "Server Port": 2666, "Connect Server": true, "Chain": "chain1", "Keys": "keys"}
+{"Connect Address": "localhost", "Connect Port": 8000, "Internal Server Address": "localhost", "Internal Server Port": 2666, "Connect Server": true, "Chain": "chain1", "Keys": "keys"}
