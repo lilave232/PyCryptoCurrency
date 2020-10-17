@@ -79,6 +79,7 @@ class P2PNetNode:
 
 		#MINING VARIABLES
 		self.mining = False
+		self.setting_target = False
 
 		#KEY BASED VARIABLES
 		self.key_directory = ""
@@ -693,7 +694,7 @@ class P2PNetNode:
 								self.chain_sizes.append(json_message['Chain_Size']) #IF CHAIN SIZE HAS NOT BEEN SEEN BEFORE ADD IT TO ARRAY
 
 						#IF CHAIN HAS BEEN FULLY DOWNLOADED NETWORK REQUESTS A TARGET FOR THE NEXT BLOCK
-						elif json_message['Type'] == 8 and self.chain_downloaded and self.node_target == None and self.setting_target = False:
+						elif json_message['Type'] == 8 and self.chain_downloaded and self.node_target == None and self.setting_target == False:
 
 							self.setting_target = True
 
