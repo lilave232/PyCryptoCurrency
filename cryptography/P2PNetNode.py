@@ -220,7 +220,7 @@ class P2PNetNode:
 	def ClientThread(self, conn, addr): 
 		
 		while True:
-			
+
 				length = int.from_bytes(conn.recv(8),'big')
 				time.sleep(1)
 
@@ -268,7 +268,7 @@ class P2PNetNode:
 
 					
 					#GET BLOCKCHAIN SIZE
-					elif json_message['Type'] == 2:
+					elif json_message['Type'] == 2 and self.chain_downloaded:
 
 						self.block_thread = True
 
