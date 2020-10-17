@@ -84,6 +84,7 @@ def process_commands(command_entry):
 		node = P2PNetNode(configuration["Internal Server Address"],configuration["Connect Address"],configuration["Connect Port"],configuration["Internal Server Port"],configuration["Chain"],use_gui=False,connect_server=configuration["Connect Server"],external_server=external_server_address,external_server_port=external_server_port)
 		print("Finishing Tasks Before Downloading Chain")
 		time.sleep(5)
+		print("Finished Tasks")
 		node.download_chain()
 		node.update_pool()
 		wallet.update_key_location(configuration["Keys"])
