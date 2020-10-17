@@ -246,6 +246,8 @@ class P2PNetNode:
 			else:
 
 				message = conn.recv(length)
+
+			print(message)
 			
 			if message:
 
@@ -608,6 +610,7 @@ class P2PNetNode:
 
 				message = client.recv(length)
 
+			print(message)
 
 			if message == b'': #IF MESSAGE RECEIVED CONTAINS NO BYTES CLIENT DISCONNECTED
 
