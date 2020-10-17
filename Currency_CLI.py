@@ -97,6 +97,12 @@ def process_commands(command_entry):
 			print("Must Connect First")
 
 			return
+		
+		if node.mining:
+
+			print("Already Mining")
+
+			return
 
 		node.download_chain() #UPDATE THE CHAIN
 
@@ -167,12 +173,20 @@ def process_commands(command_entry):
 		print("Usable Balance Is: {:.8f}".format(usable_balance)) #PRINT USABLE BALANCE
 
 		wallet.list_utxos(node) #PRINT UTXOS
+
 	elif command == "loopmine":
 		if node == None:
 
 			print("Must Connect First")
 
 			return
+
+		if node.mining:
+
+			print("Already Mining")
+
+			return
+
 
 		node.download_chain() #UPDATE THE CHAIN
 
