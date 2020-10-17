@@ -1081,7 +1081,7 @@ class P2PNetNode:
 			if loop_mine == True:
 				while len(self.peer_services) == 0:
 					continue
-				time.sleep(10)
+				time.sleep(5)
 
 			self.download_chain()
 
@@ -1175,7 +1175,12 @@ class P2PNetNode:
 			while self.block_saving:
 				continue
 
+			print("Updating Chain")
+			time.sleep(1)
+
 			self.update_chain()
+
+			print("Finished Updating Chain")
 
 			if loop_mine:
 				self.chain_mine(True)
