@@ -221,8 +221,6 @@ class P2PNetNode:
 		
 		while True:
 
-			time.sleep(1)
-
 			length = int.from_bytes(conn.recv(8),'big')
 
 			if length > 2048:
@@ -541,7 +539,7 @@ class P2PNetNode:
 
 		self.main_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #SET SOCKET OPTIONS
 
-		self.main_server.bind((server_address, server_port)) #BIND SERVER TO ADDRESS AND PORT
+		self.main_server.bind(("0.0.0.0", server_port)) #BIND SERVER TO ADDRESS AND PORT
 
 		self.main_server.listen(100) #LISTEN TO SOCKET AND QUEUE AS MANY AS 100 CONNECT REQUESTS
 		
@@ -560,16 +558,14 @@ class P2PNetNode:
 				threading.Thread(target=self.ClientThread,args=(conn,addr)).start() #OPEN THREAD FOR NEW CLIENT CONNECTION
 			
 			except:
-				#raise Exception("Exception Reached")
+				raise Exception("Exception Reached")
 				return
 
 		self.main_server.close() #CLOSE MAIN SERVER IF WHILE LOOP BROKEN
 
-	def read_client_message(self,client,addr):
+	def read_client_message(self,client,addr,port):
 
 		while True:
-
-			time.sleep(1)
 
 			#ENABLE NON BLOCKING SERVER MESSAGE RECEIPT SHOULD RUN IN PARALLEL SO THAT MESSAGES DON'T GET DROPPED
 			#sockets_list = self.peer_clients #GET LIST OF SOCKETS
@@ -606,15 +602,13 @@ class P2PNetNode:
 
 			else:
 
-				time.sleep(1)
-
 				message = client.recv(length)
 
 			print(message)
 
 			if message == b'': #IF MESSAGE RECEIVED CONTAINS NO BYTES CLIENT DISCONNECTED
 
-				self.peer_services.remove(connect_address + ":" + str(connect_port)) #REMOVE VALUE FROM PEER SERVICES
+				self.peer_services.remove(addr + ":" + str(port)) #REMOVE VALUE FROM PEER SERVICES
 
 				self.peer_clients.remove(client) #REMOVE FROM PEER CLIENTS LIST
 
@@ -844,7 +838,7 @@ class P2PNetNode:
 
 			self.peer_clients.append(client) #ADD CLIENT TO LIST OF CLIENTS
 
-			threading.Thread(target=self.read_client_message,args=(client,connect_address)).start()
+			threading.Thread(target=self.read_client_message,args=(client,connect_address,connect_port)).start()
 			
 		except:
 
