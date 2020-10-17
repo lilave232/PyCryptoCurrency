@@ -558,8 +558,8 @@ class P2PNetNode:
 				threading.Thread(target=self.ClientThread,args=(conn,addr)).start() #OPEN THREAD FOR NEW CLIENT CONNECTION
 			
 			except:
-				raise Exception("Exception Reached")
-				return
+				#raise Exception("Exception Reached")
+				continue
 
 		self.main_server.close() #CLOSE MAIN SERVER IF WHILE LOOP BROKEN
 
