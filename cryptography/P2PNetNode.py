@@ -167,6 +167,7 @@ class P2PNetNode:
 			self.chain_size += (os.path.getsize(os.path.join(self.chain_directory,"blk%s.pkl" % i))) #INCREMENT CHAIN SIZE
 
 		self.print("Chain Downloaded")
+		self.print("Chain Size:",self.chain_size)
 		self.chain_downloaded = True
 		self.chain_downloading = False
 
@@ -541,6 +542,8 @@ class P2PNetNode:
 
 		self.main_server.bind(("0.0.0.0", server_port)) #BIND SERVER TO ADDRESS AND PORT
 
+		self.main_server.settimeout(1)
+
 		self.main_server.listen(100) #LISTEN TO SOCKET AND QUEUE AS MANY AS 100 CONNECT REQUESTS
 		
 		self.print("Listening on port:{0}".format(server_port))
@@ -557,7 +560,7 @@ class P2PNetNode:
 
 				threading.Thread(target=self.ClientThread,args=(conn,addr)).start() #OPEN THREAD FOR NEW CLIENT CONNECTION
 			
-			except:
+			except socket.timeout:
 				#raise Exception("Exception Reached")
 				continue
 
@@ -804,7 +807,7 @@ class P2PNetNode:
 			client.connect((connect_address, connect_port)) #CONNECT TO SERVER
 
 			#client.setblocking(0)
-			#client.settimeout(10)
+			client.settimeout(10)
 			
 			
 
