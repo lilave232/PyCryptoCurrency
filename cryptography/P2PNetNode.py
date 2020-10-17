@@ -56,6 +56,7 @@ class P2PNetNode:
 		#DOWNLOAD CHAIN BASED VARIABLES
 		self.chain_downloaded = False
 		self.chain_downloading = False
+		self.chain_updating = False
 		self.chain_directory = chain_directory
 		self.file_count = 0
 		self.chain_size = 0
@@ -173,8 +174,10 @@ class P2PNetNode:
 
 
 	def update_chain(self):
+		self.chain_updating = True
 		self.chain_size = 0
 		self.block_hashes = []
+
 		i = 0
 
 		while os.path.exists(os.path.join(self.chain_directory,"blk%s.pkl" % i)):
@@ -194,6 +197,7 @@ class P2PNetNode:
 				try:
 
 					prev_hash = bytearray(32).hex()
+					print(prev_hash)
 
 					if len(self.block_hashes) > 0 and i - 1 >= 0:
 
@@ -218,6 +222,8 @@ class P2PNetNode:
 		
 		self.block_thread = False
 	
+		self.chain_updating = False
+
 	def ClientThread(self, conn, addr): 
 		
 		while True:
@@ -370,6 +376,9 @@ class P2PNetNode:
 									self.txn_pool.remove(txn)
 
 						self.update_chain()
+
+						while self.chain_updating:
+							continue
 						
 						self.block_saving = False
 
@@ -737,6 +746,9 @@ class P2PNetNode:
 											self.txn_pool.remove(txn)
 
 								self.update_chain()
+
+								while self.chain_updating:
+									continue
 								
 								self.block_saving = False
 
@@ -1009,6 +1021,9 @@ class P2PNetNode:
 				self.block_thread = False #RELEASE MAIN THREAD
 
 				self.update_chain()
+
+				while self.chain_updating:
+					continue
 
 				self.block_saving = False
 			
