@@ -177,13 +177,13 @@ class P2PNetNode:
 
 
 	def update_chain(self):
+
+		if self.mining:
+			return
+		
 		self.chain_updating = True
 		self.chain_size = 0
 		self.block_hashes = []
-
-		if self.mining:
-
-			return
 
 		i = 0
 
