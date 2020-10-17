@@ -459,7 +459,7 @@ class P2PNetNode:
 
 					self.print("CONNECTION BROKEN")
 
-					break
+					continue
 			except:
 				print("Exception")
 				continue
@@ -549,7 +549,7 @@ class P2PNetNode:
 
 		self.main_server.listen(100) #LISTEN TO SOCKET AND QUEUE AS MANY AS 100 CONNECT REQUESTS
 
-		self.main_server.settimeout(0.1)
+		#self.main_server.settimeout(10)
 
 		#self.main_server.setblocking(0)
 		
@@ -581,7 +581,7 @@ class P2PNetNode:
 		try:
 
 			client.connect((connect_address, connect_port)) #CONNECT TO SERVER
-			client.settimeout(0.1)
+			client.settimeout(10)
 			
 			
 
