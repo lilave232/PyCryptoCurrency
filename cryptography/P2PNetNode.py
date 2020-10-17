@@ -167,7 +167,7 @@ class P2PNetNode:
 			self.chain_size += (os.path.getsize(os.path.join(self.chain_directory,"blk%s.pkl" % i))) #INCREMENT CHAIN SIZE
 
 		self.print("Chain Downloaded")
-		self.print("Chain Size:",self.chain_size)
+		self.print("Chain Size:{0}".format(self.chain_size))
 		self.chain_downloaded = True
 		self.chain_downloading = False
 
