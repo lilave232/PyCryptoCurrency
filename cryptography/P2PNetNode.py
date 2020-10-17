@@ -55,6 +55,7 @@ class P2PNetNode:
 
 		#DOWNLOAD CHAIN BASED VARIABLES
 		self.chain_downloaded = False
+		self.chain_downloading = False
 		self.chain_directory = chain_directory
 		self.file_count = 0
 		self.chain_size = 0
@@ -112,6 +113,8 @@ class P2PNetNode:
 	
 	def download_chain(self):
 
+		self.chain_downloading = True
+
 		self.chain_size_confirmations = 0
 
 		self.update_chain() #START CHAIN DOWNLOAD BY ENSURING CHAIN IS UP TO DATE
@@ -165,6 +168,7 @@ class P2PNetNode:
 
 		self.print("Chain Downloaded")
 		self.chain_downloaded = True
+		self.chain_downloading = False
 
 
 	def update_chain(self):
@@ -216,6 +220,9 @@ class P2PNetNode:
 	def ClientThread(self, conn, addr): 
 		
 		while True:
+
+				while self.chain_downloading:
+					continue
 
 				length = int.from_bytes(conn.recv(8),'big')
 				time.sleep(1)
@@ -604,6 +611,10 @@ class P2PNetNode:
 			return
 		
 		while True:
+
+
+			while self.chain_downloading:
+				continue
 			#ENABLE NON BLOCKING SERVER MESSAGE RECEIPT SHOULD RUN IN PARALLEL SO THAT MESSAGES DON'T GET DROPPED
 			#sockets_list = self.peer_clients #GET LIST OF SOCKETS
 
