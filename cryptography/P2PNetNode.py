@@ -961,8 +961,7 @@ class P2PNetNode:
 
 			#CHECK BLOCK HASH IS BELOW TARGET
 			print("TARGET IS:",self.node_target)
-			print(self.block_saving)
-			print(block_hash.hex() in self.block_hashes)
+
 			if self.block_saving == True or block_hash.hex() in self.block_hashes:
 				json_message = {"Type":10,"Block":block} #PREPARE MESSAGE TO SEND
 
@@ -970,6 +969,10 @@ class P2PNetNode:
 
 				client.send(message)
 				return
+
+			if self.node_target == None:
+				return
+				
 			assert (block_hash < (bytes.fromhex(self.node_target) + bytearray(28)))
 
 			#CHECK OTHER TRANSACTIONS ONLY AFTER CONFIRMATION ARE THESE ADDED SO RISK IS LOWER
