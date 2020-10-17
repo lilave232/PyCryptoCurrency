@@ -363,7 +363,7 @@ class P2PNetNode:
 							
 							self.pending_block_hashes[block_hash.hex()] = 1
 
-					print(self.pending_block_hashes[block_hash.hex()])
+					#print(self.pending_block_hashes[block_hash.hex()])
 
 					#CHECKING IF BLOCK CONFIRMATIONS MEETS MINIMUM NUMBER OF CONFIRMATIONS
 					if self.pending_block_hashes[block_hash.hex()] >= self.BLOCK_MIN_CONFIRMATIONS and block_hash.hex() not in self.block_hashes and self.block_saving == False:
@@ -703,8 +703,8 @@ class P2PNetNode:
 							lower_bound = 500
 							upper_bound = 1000
 							if len(self.peer_services) > 1:
-								lower_bound = 2000
-								upper_bound = 4000
+								lower_bound = 500
+								upper_bound = 1000
 							elif len(self.peer_services) > 2:
 								lower_bound = 5000
 								upper_bound = 20000
