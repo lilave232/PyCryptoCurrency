@@ -194,6 +194,8 @@ class P2PNetNode:
 
 					block_hash = hash_block_dict(b)
 
+					print("Block Hash: ", block_hash.hex())
+
 				try:
 
 					prev_hash = bytearray(32).hex()
@@ -202,7 +204,7 @@ class P2PNetNode:
 
 						prev_hash = self.block_hashes[i - 1]
 
-					print(prev_hash)
+						print("Prev Hash: ", block_hash.hex())
 
 						assert(b['prev_block_hash'] == prev_hash)
 
