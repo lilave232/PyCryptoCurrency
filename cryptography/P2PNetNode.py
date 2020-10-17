@@ -141,6 +141,9 @@ class P2PNetNode:
 
 			continue
 
+		print("CONFIRMED SIZE:",self.confirmed_size)
+		print("CHAIN SIZE:",self.chain_size)
+
 		
 		while self.chain_size < self.confirmed_size: #WHILE CHAIN SIZE LESS THAN CONFIRMED SIZE
 
@@ -271,9 +274,9 @@ class P2PNetNode:
 				#SEND SERVER INFORMATION
 				if json_message['Type'] == 0:
 
-					print("New Peer Available")
+					if json_message['Address'] + ":" + str(json_message['Port']) not in self.peer_services and json_message['Address'] + ":" + str(json_message['Port']) != self.server_address + ":" + str(self.server_port):
 
-					if json_message['Address'] + ":" + str(json_message['Port']) not in self.peer_services:
+						print("New Peer Available")
 
 						threading.Thread(target=self.start_client,args=(json_message['Address'],json_message["Port"])).start()
 
