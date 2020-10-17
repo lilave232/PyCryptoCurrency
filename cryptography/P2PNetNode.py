@@ -317,19 +317,21 @@ class P2PNetNode:
 
 				#RECEIVE BLOCK CONFIRMATIONS AND SAVE
 				elif json_message['Type'] == 10:
+					print("10 Received")
 					#HASH BLOCK
 					block_hash = hash_block_dict(json_message['Block'])
 					#CHECK IF BLOCK IS ALREADY ON CHAIN
 					if block_hash.hex() not in self.block_hashes:
 						#CHECK IF BLOCK IS ALREADY PENDING CONFIRMATIONS
 						if block_hash.hex() in self.pending_block_hashes:
-
 							self.pending_block_hashes[block_hash.hex()] += 1
 		
 						#IF BLOCK NOT PENDING CONFIRMATIONS ADD TO PENDING
 						else:
 							
 							self.pending_block_hashes[block_hash.hex()] = 1
+
+					print(self.pending_block_hashes[block_hash.hex()])
 
 					#CHECKING IF BLOCK CONFIRMATIONS MEETS MINIMUM NUMBER OF CONFIRMATIONS
 					if self.pending_block_hashes[block_hash.hex()] >= self.BLOCK_MIN_CONFIRMATIONS and block_hash.hex() not in self.block_hashes and self.block_saving == False:
@@ -656,6 +658,8 @@ class P2PNetNode:
 
 						#IF CHAIN HAS BEEN FULLY DOWNLOADED NETWORK REQUESTS A TARGET FOR THE NEXT BLOCK
 						elif json_message['Type'] == 8 and self.chain_downloaded and self.node_target == None:
+
+							print("RECEIVED TYPE 8")
 							#NO TARGET HAS BEEN ESTABLISHED GENERATE TARGET
 							lower_bound = 500
 							upper_bound = 1000
