@@ -559,11 +559,17 @@ class P2PNetNode:
 
 		while True: #LOOP WAITING FOR CONNECTION
 
-			conn, addr = self.main_server.accept() #ACCEPT INCOMING REQUEST
+			try:
 
-			self.list_of_clients.append(conn) #ADD CONNECTION TO LIST OF CLIENTS
+				conn, addr = self.main_server.accept() #ACCEPT INCOMING REQUEST
 
-			threading.Thread(target=self.ClientThread,args=(conn,addr)).start() #OPEN THREAD FOR NEW CLIENT CONNECTION
+				self.list_of_clients.append(conn) #ADD CONNECTION TO LIST OF CLIENTS
+
+				threading.Thread(target=self.ClientThread,args=(conn,addr)).start() #OPEN THREAD FOR NEW CLIENT CONNECTION
+			
+			except:
+				#print("Exception")
+				continue
 
 		self.main_server.close() #CLOSE MAIN SERVER IF WHILE LOOP BROKEN
 
@@ -573,7 +579,7 @@ class P2PNetNode:
 		client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #OPEN SOCKET CLIENT
 
 		try:
-			
+
 			client.connect((connect_address, connect_port)) #CONNECT TO SERVER
 			client.settimeout(0.1)
 			
