@@ -178,6 +178,10 @@ class P2PNetNode:
 		self.chain_size = 0
 		self.block_hashes = []
 
+		if self.mining:
+
+			return
+
 		i = 0
 
 		while os.path.exists(os.path.join(self.chain_directory,"blk%s.pkl" % i)):
@@ -194,7 +198,7 @@ class P2PNetNode:
 
 					block_hash = hash_block_dict(b)
 
-					print("Block Hash: ", block_hash.hex())
+					#print("Block Hash: ", block_hash.hex())
 
 				try:
 
@@ -204,7 +208,9 @@ class P2PNetNode:
 
 						prev_hash = self.block_hashes[i - 1]
 
-						print("Prev Hash: ", prev_hash)
+						#print("Prev Hash: ", prev_hash)
+
+						print({"Block Hash":block_hash.hex(),"Prev Hash":prev_hash})
 
 						assert(b['prev_block_hash'] == prev_hash)
 
@@ -972,7 +978,7 @@ class P2PNetNode:
 
 			if self.node_target == None:
 				return
-				
+
 			assert (block_hash < (bytes.fromhex(self.node_target) + bytearray(28)))
 
 			#CHECK OTHER TRANSACTIONS ONLY AFTER CONFIRMATION ARE THESE ADDED SO RISK IS LOWER
