@@ -289,6 +289,8 @@ class P2PNetNode:
 
 				#SEND TARGET TO REQUESTING CLIENT OR ASK FOR CLIENT TO SET TARGET
 				elif json_message['Type'] == 8 and self.chain_downloaded:
+
+					print("RECEIVED TYPE 8")
 					#ASK CLIENT TO SET TARGET
 					if self.node_target == None:
 
@@ -642,7 +644,9 @@ class P2PNetNode:
 						#RECEIVE CHAIN SIZE
 						elif json_message['Type'] == 3:
 
-							#print("Chain Size Received:",json_message['Chain_Size'])
+							
+
+							print("Chain Size Received:",json_message['Chain_Size'])
 							
 							if json_message['Chain_Size'] in self.chain_sizes: #IF CHAIN SIZE HAS ALREADY BEEN RECORDED
 

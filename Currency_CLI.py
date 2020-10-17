@@ -82,7 +82,9 @@ def process_commands(command_entry):
 			external_server_port = configuration["External Server Port"]
 
 		node = P2PNetNode(configuration["Internal Server Address"],configuration["Connect Address"],configuration["Connect Port"],configuration["Internal Server Port"],configuration["Chain"],use_gui=False,connect_server=configuration["Connect Server"],external_server=external_server_address,external_server_port=external_server_port)
-		#time.sleep(5)
+		print("Setting Things Up")
+		time.sleep(5)
+		print("Donwloading Chain")
 		node.download_chain()
 		node.update_pool()
 		wallet.update_key_location(configuration["Keys"])
