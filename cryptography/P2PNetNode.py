@@ -265,6 +265,16 @@ class P2PNetNode:
 
 							threading.Thread(target=self.start_client,args=(json_message['Address'],json_message["Port"])).start()
 
+							if self.node_target != None:
+
+								self.print("Sending Target:{0}".format(self.node_target))
+								#SEND TARGET
+								json_message = {'Type':9,'Target':self.node_target}
+
+								message = self.prepare_message(json.dumps(json_message))
+
+								conn.send(message)
+
 							self.broadcast_server_to_client(message.decode('utf-8'), conn)
 						
 
