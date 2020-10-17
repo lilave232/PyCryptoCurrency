@@ -210,7 +210,8 @@ class P2PNetNode:
 
 						#print("Prev Hash: ", prev_hash)
 
-						print({"Block Hash":block_hash.hex(),"Prev Hash":prev_hash})
+						
+						#print({"Block Hash":block_hash.hex(),"Prev Hash":prev_hash})
 
 						assert(b['prev_block_hash'] == prev_hash)
 
