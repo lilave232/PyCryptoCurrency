@@ -194,8 +194,6 @@ class P2PNetNode:
 
 						prev_hash = self.block_hashes[i - 1]
 
-					if not self.mining:
-
 						assert(b['prev_block_hash'] == prev_hash)
 
 				except:
@@ -364,6 +362,8 @@ class P2PNetNode:
 									if (txn in self.txn_pool):
 
 										self.txn_pool.remove(txn)
+
+							self.update_chain()
 							
 							self.block_saving = False
 
@@ -710,6 +710,8 @@ class P2PNetNode:
 
 					json_message = {'Type':9,'Target':target} #PREPARE RETURN MESSAGE
 
+					self.print("Chain Target:{0}".format(self.node_target)) #DISPLAY TARGET
+
 					self.node_target = target #SET TARGET VALUE
 
 					self.broadcast_client_to_server(json.dumps(json_message)) #SEND TARGET FROM CLIENT TO SERVER
@@ -759,10 +761,10 @@ class P2PNetNode:
 								if (txn in self.txn_pool):
 
 									self.txn_pool.remove(txn)
-						
-						self.block_saving = False
 
 						self.update_chain()
+						
+						self.block_saving = False
 
 				
 				# IF MESSAGE RECEIVED WITH TYPE 11 MINED BLOCK WAS REJECTED BY THE NETWORK
@@ -982,6 +984,8 @@ class P2PNetNode:
 					self.block_hashes.append(block_hash.hex()) #ADD BLOCK TO HASHES
 
 				self.block_thread = False #RELEASE MAIN THREAD
+
+				self.update_chain()
 
 				self.block_saving = False
 			
