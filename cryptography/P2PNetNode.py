@@ -549,7 +549,7 @@ class P2PNetNode:
 
 		self.main_server.listen(100) #LISTEN TO SOCKET AND QUEUE AS MANY AS 100 CONNECT REQUESTS
 
-		self,main_server.settimeout(0.1)
+		self.main_server.settimeout(0.1)
 
 		#self.main_server.setblocking(0)
 		
