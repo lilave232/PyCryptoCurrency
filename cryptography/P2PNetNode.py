@@ -912,6 +912,9 @@ class P2PNetNode:
 
 			previous_hash = bytearray(32).hex() #ESTABLISH PREVIOUS CONFIRMED BLOCK HASH VARIABLE
 
+			if self.node_target == None:
+				return
+
 			if (len(self.block_hashes) > 0): #IF LENGTH PREVIOUS HASHES ARRAY GREATER THAN 0
 
 				previous_hash = self.block_hashes[-1] #SET PREVIOUS HASH AS LAST ELEMENT ON ARRAY
