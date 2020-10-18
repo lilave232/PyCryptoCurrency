@@ -341,7 +341,7 @@ class P2PNetNode:
 						conn.send(message)
 
 				#SET NODE TARGET
-				elif json_message['Type'] == 9 and self.chain_downloaded:
+				elif json_message['Type'] == 9:
 
 					self.node_target = json_message['Target']
 
