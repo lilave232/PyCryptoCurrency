@@ -172,7 +172,7 @@ def process_commands(command_entry):
 
 		print("Usable Balance Is: {:.8f}".format(usable_balance)) #PRINT USABLE BALANCE
 
-		wallet.list_utxos(node) #PRINT UTXOS
+		#wallet.list_utxos(node) #PRINT UTXOS
 
 	elif command == "loopmine":
 		if node == None:
