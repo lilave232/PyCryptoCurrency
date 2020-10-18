@@ -1085,6 +1085,10 @@ class P2PNetNode:
 
 		self.mining = True
 
+		t = time.localtime()
+		current_time = time.strftime("%H:%M:%S", t)
+		print("Started Mining:",current_time)
+
 		try:
 			if loop_mine == True:
 				while len(self.peer_services) == 0:
@@ -1189,6 +1193,10 @@ class P2PNetNode:
 			self.update_chain()
 
 			print("Finished Updating Chain")
+
+			t = time.localtime()
+			current_time = time.strftime("%H:%M:%S", t)
+			print("Finished Mining:",current_time)
 
 			if loop_mine:
 				self.chain_mine(True)
