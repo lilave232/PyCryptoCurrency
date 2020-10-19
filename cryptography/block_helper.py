@@ -112,7 +112,7 @@ def save_block(dir,block): #SAVE NEW BLOCK
 
         #pickle.dump(block, handle) #SAVE BLOCK
 
-def gen_block(target, pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
+def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
     
     time_val = int(time.time()) #SETUP TIME VALUE FOR FIRST MINING ATTEMPT
 
@@ -128,7 +128,7 @@ def gen_block(target, pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
 
     txns.extend(node.txn_pool) #EXTEND ARRAY TO INCLUDE TXNS
 
-    blocks = {"prev_block_hash":prev_block_hash,"time":time_val,"target":target,"nonce":nonce,"txns":txns} #SETUP BLOCK FORMAT
+    blocks = {"prev_block_hash":prev_block_hash,"time":time_val,"target":node.target,"nonce":nonce,"txns":txns} #SETUP BLOCK FORMAT
 
     block_in_value = 0
     block_out_value = 0

@@ -1140,7 +1140,7 @@ class P2PNetNode:
 
 			self.update_pool() #UPDATE MEM POOL
 
-			block = gen_block(self.node_target, hash, prev_block_hash, self) #GENERATE A COMPLETE AND FORMATTED BLOCK WITH GIVEN VALUES
+			block = gen_block(hash, prev_block_hash, self) #GENERATE A COMPLETE AND FORMATTED BLOCK WITH GIVEN VALUES
 
 			if block == False:
 				self.print("Failed to Mine Block")
@@ -1343,11 +1343,13 @@ class P2PNetNode:
 
 			self.broadcast_client_to_server(json.dumps(json_message)) #BROADCAST MESSAGE
 
-			if  self.txn_confirmations[txn['txnid']] >= self.TXN_MIN_CONFIRMATIONS not in self.txn_pool: #IF CONFIRMATIONS GREATER THAN MIN CONFIRMATIONS
+			if txn['txnid'] in self.txn_confirmations:
 
-				json_message = {"Type":15,"TXID":txn['txnid'],"Txn":txn} #PREPARE MESSAGE
+				if  self.txn_confirmations[txn['txnid']] >= self.TXN_MIN_CONFIRMATIONS not in self.txn_pool: #IF CONFIRMATIONS GREATER THAN MIN CONFIRMATIONS
 
-				self.broadcast_client_to_server(json.dumps(json_message)) #SEND MESSAGE TO ADD TXN TO POOL
+					json_message = {"Type":15,"TXID":txn['txnid'],"Txn":txn} #PREPARE MESSAGE
+
+					self.broadcast_client_to_server(json.dumps(json_message)) #SEND MESSAGE TO ADD TXN TO POOL
 			
 		except:
 			if txn['txnid'] in self.txn_confirmations:
