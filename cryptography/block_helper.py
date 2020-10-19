@@ -170,8 +170,6 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
 
         blocks['target'] = node.node_target
 
-        print(bytes.fromhex(blocks['target']) + bytearray(28))
-
         blocks['txns'] = [] #CREATE TXN ARRAY
 
         coinbase_txn = gen_coinbase_txn(pubKeyHash)
