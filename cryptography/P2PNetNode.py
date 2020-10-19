@@ -1257,7 +1257,7 @@ class P2PNetNode:
 
 			if self.node_target != None:
 
-				self.node_target = int(int.from_bytes(bytes.fromhex(self.node_target),byteorder='big') + 500).to_bytes(4,byteorder='big').hex()
+				self.node_target = int(int.from_bytes(bytes.fromhex(self.node_target),byteorder='big') + 2048).to_bytes(4,byteorder='big').hex()
 
 				print("Target Updated: ", self.node_target)
 
@@ -1302,7 +1302,10 @@ class P2PNetNode:
 				#VERIFY USER OWNS INPUTS BY CHECKING PRIVATE KEY GENERATED SIGNATURE MATCHES PUBKEYHASH THIS VERIFIES OWNERSHIP OF PUBLICKEY AND THEREFORE OWNERSHIP OF COIN BEING SENT
 				verify_msg(bytes.fromhex(input_val['sign_prev_out']),bytes.fromhex(address),pub_key_from_string(pubKeys[x]))
 
-				assert(not any(input_val in d['inputs'] for d in self.txn_pool))
+			
+				if txn not in self.txn_pool:
+
+					assert(not any(input_val in d['inputs'] for d in self.txn_pool))
 				
 
 			#CHECK OUTPUTS
