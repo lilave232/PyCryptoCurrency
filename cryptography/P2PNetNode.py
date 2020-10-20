@@ -244,6 +244,10 @@ class P2PNetNode:
 
 			length = int.from_bytes(conn.recv(8),'big')
 
+			message = conn.recv(length)
+
+			time.sleep(1)
+
 			""" 			print("Message Length:",length)
 
 			if length > 2048:
@@ -265,8 +269,6 @@ class P2PNetNode:
 						recv_amount = length - recv_length
 
 			else: """
-
-			message = conn.recv()
 			
 			if message:
 
