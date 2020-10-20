@@ -242,7 +242,7 @@ class P2PNetNode:
 		
 		while True:
 
-			length = int.from_bytes(conn.recv(8),'big')
+			length = int.from_bytes(conn.recv(8),'big') + 20
 
 			""" 			print("Message Length:",length)
 
