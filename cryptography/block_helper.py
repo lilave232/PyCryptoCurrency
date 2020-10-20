@@ -164,65 +164,61 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
 
     while block_hash > (bytes.fromhex(blocks['target']) + bytearray(28)): #CHECK IF HASH IS BELOW TARGET LOOP UNTIL HASH IS BELOW TARGET
 
-        try:
+        #print("Mining")
 
-            #print("Mining")
+        if node.block_added == True:
 
-            if node.block_added == True:
+            return False
 
-                return False
+        blocks['target'] = node.node_target
 
-            blocks['target'] = node.node_target
+        blocks['txns'] = [] #CREATE TXN ARRAY
 
-            blocks['txns'] = [] #CREATE TXN ARRAY
+        coinbase_txn = gen_coinbase_txn(pubKeyHash)
 
-            coinbase_txn = gen_coinbase_txn(pubKeyHash)
+        blocks['txns'].append(coinbase_txn) #APPEND COINBASE TXN
 
-            blocks['txns'].append(coinbase_txn) #APPEND COINBASE TXN
+        block_in_value = 0
+        block_out_value = 0
 
-            block_in_value = 0
-            block_out_value = 0
+        for x,txn in enumerate(node.txn_pool):
 
-            for x,txn in enumerate(node.mempool):
+            if txn in confirmed_txns:
+                continue
 
-                if txn in confirmed_txns:
-                    continue
+            if x == 0:
 
-                if x == 0:
+                continue
 
-                    continue
+            for x, input_val in enumerate(txn['inputs']):
 
-                for x, input_val in enumerate(txn['inputs']):
+                prev_txn = get_txn(input_val['prev_txid'],node.chain_directory) #GET PREVIOUS TXN
 
-                    prev_txn = get_txn(input_val['prev_txid'],node.chain_directory) #GET PREVIOUS TXN
+                if prev_txn == False: #IF THEIR IS NO PREVIOUS TXN ERROR REACHED
 
-                    if prev_txn == False: #IF THEIR IS NO PREVIOUS TXN ERROR REACHED
+                    return False
+                
+                block_in_value += prev_txn['outputs'][input_val['prev_txn_output']]['value']
 
-                        return False
-                    
-                    block_in_value += prev_txn['outputs'][input_val['prev_txn_output']]['value']
+            for x, output_val in enumerate(txn['outputs']): #FOR OUTPUT IN TRANSACTION
 
-                for x, output_val in enumerate(txn['outputs']): #FOR OUTPUT IN TRANSACTION
+                block_out_value += output_val['value'] #INCREMENT TOTAL OUTPUT VALUE
 
-                    block_out_value += output_val['value'] #INCREMENT TOTAL OUTPUT VALUE
+            confirmed_txns.append(txn)
 
-                confirmed_txns.append(txn)
+        blocks['txns'].extend(confirmed_txns) #EXTEND ARRAY TO INCLUDE TXNS
+        
+        blocks['txns'][0]['outputs'][0]['value'] += (block_in_value - block_out_value)
 
-            blocks['txns'].extend(confirmed_txns) #EXTEND ARRAY TO INCLUDE TXNS
-            
-            blocks['txns'][0]['outputs'][0]['value'] += (block_in_value - block_out_value)
+        nonce = random.randint(0,4294967295) #GET RANDOM NONCE VALUE
 
-            nonce = random.randint(0,4294967295) #GET RANDOM NONCE VALUE
+        nonce = nonce.to_bytes(4, byteorder = 'big').hex() #CONVERT RANDOM VALUE TO 4 BYTE INTEGER
 
-            nonce = nonce.to_bytes(4, byteorder = 'big').hex() #CONVERT RANDOM VALUE TO 4 BYTE INTEGER
+        blocks['nonce'] = nonce #SET NONCE VALUE
 
-            blocks['nonce'] = nonce #SET NONCE VALUE
+        blocks['time'] = int(time.time()) #SET TIME TO REFLECT MORE RECENT MINE TIME
 
-            blocks['time'] = int(time.time()) #SET TIME TO REFLECT MORE RECENT MINE TIME
-
-            block_hash = hash_block_dict(blocks) #HASH BLOCK
-        except:
-            raise Exception("EXCEPTION")
+        block_hash = hash_block_dict(blocks) #HASH BLOCK
 
     node.print("Completed Mining")
 
