@@ -246,7 +246,7 @@ class P2PNetNode:
 
 			message = conn.recv(length)
 
-			print("Message:",message.hex())
+			print("Message:",message.decode("utf-8"))
 
 			""" 			print("Message Length:",length)
 
@@ -613,242 +613,238 @@ class P2PNetNode:
 		while True:
 
 			#ENABLE NON BLOCKING SERVER MESSAGE RECEIPT SHOULD RUN IN PARALLEL SO THAT MESSAGES DON'T GET DROPPED
-			sockets_list = self.peer_clients #GET LIST OF SOCKETS
+			#sockets_list = self.peer_clients #GET LIST OF SOCKETS
 
-			read_sockets,write_socket, error_socket = select.select(sockets_list,[],[]) #RUN SELECT TO SPLIT SOCKET INTO WRITE SOCKET AND READ SOCKET
+			#read_sockets,write_socket, error_socket = select.select(sockets_list,[],[]) #RUN SELECT TO SPLIT SOCKET INTO WRITE SOCKET AND READ SOCKET
 
-			for socks in read_sockets:
+			#for socks in read_sockets:
 
-				if socks == client:
+			#	if socks == client:
 			
-					length = int.from_bytes(client.recv(8),'big')
+			length = int.from_bytes(client.recv(8),'big')
 
-					if length > 2048:
+			if length > 2048:
 
-						recv_length = 0
+				recv_length = 0
 
-						message = bytes()
+				message = bytes()
 
-						recv_amount = 2048
+				recv_amount = 2048
 
-						while recv_length < length:
+				while recv_length < length:
 
-							time.sleep(1)
+					message += client.recv(recv_amount)
+					
+					#print(message)
 
-							message += client.recv(recv_amount)
-							
-							#print(message)
+					recv_length += 2048
 
-							recv_length += 2048
+					if (recv_length + 2048 > length):
 
-							if (recv_length + 2048 > length):
+						recv_amount = length - recv_length
 
-								recv_amount = length - recv_length
+			else:
+
+				message = client.recv(length)
+
+			if message == b'': #IF MESSAGE RECEIVED CONTAINS NO BYTES CLIENT DISCONNECTED
+
+				self.peer_services.remove(addr + ":" + str(port)) #REMOVE VALUE FROM PEER SERVICES
+
+				self.peer_clients.remove(client) #REMOVE FROM PEER CLIENTS LIST
+
+				client.close() #CLOSE CLIENTS
+
+				self.print("Connection Broken")
+
+				return
+
+			if message: #MESSAGE WAS RECEIVED
+
+				json_message = json.loads(message.decode('utf-8')) #LOAD MESSAGE INTO DICT
+
+				#RECEIVED INFORMATION ABOUT ANOTHER SERVER
+				if json_message['Type'] == 0: #IF MESSAGE TYPE = 0
+
+					if self.connect_server == False and json_message['Address'] + ":" + str(json_message['Port']) not in self.peer_services:
+
+						threading.Thread(target=self.start_client,args=(json_message['Address'],int(json_message["Port"]))).start() #OPEN NEW THREAD TO CREATE A NEW CLIENT TO CONNECT TO NEW SERVER
+
+					#IF SERVER DOESN'T ALREADY EXIST IN PEER SERVICES AND SERVER NOT LOCAL SERVER
+					elif json_message['Address'] + ":" + str(json_message['Port']) not in self.peer_services and json_message['Address'] + ":" + str(json_message['Port']) != (self.server_address + ":" + str(self.server_port)):
+
+						threading.Thread(target=self.start_client,args=(json_message['Address'],json_message["Port"])).start() #OPEN NEW THREAD TO CREATE A NEW CLIENT TO CONNECT TO NEW SERVER
+
+				#RECEIVE CHAIN SIZE
+				elif json_message['Type'] == 3:
+
+					
+
+					print("Chain Size Received:",json_message['Chain_Size'])
+					
+					if json_message['Chain_Size'] in self.chain_sizes: #IF CHAIN SIZE HAS ALREADY BEEN RECORDED
+
+						self.chain_size_confirmations += 1 #INCREMENT COUNTER
+
+						if self.chain_size_confirmations >= self.CHAIN_SIZE_MIN_CONFIRMATIONS: #IF CONFIRMATIONS 
+
+							self.confirmed_size = json_message['Chain_Size'] #APPLY CHAIN SIZE AS CONFIRMED CHAIN SIZE
 
 					else:
 
-						message = client.recv(length)
+						self.chain_sizes.append(json_message['Chain_Size']) #IF CHAIN SIZE HAS NOT BEEN SEEN BEFORE ADD IT TO ARRAY
 
-					print(message)
+				#IF CHAIN HAS BEEN FULLY DOWNLOADED NETWORK REQUESTS A TARGET FOR THE NEXT BLOCK
+				elif json_message['Type'] == 8 and self.chain_downloaded and self.node_target == None and self.setting_target == False:
 
-					if message == b'': #IF MESSAGE RECEIVED CONTAINS NO BYTES CLIENT DISCONNECTED
+					self.setting_target = True
 
-						self.peer_services.remove(addr + ":" + str(port)) #REMOVE VALUE FROM PEER SERVICES
+					print("RECEIVED TYPE 8")
+					#NO TARGET HAS BEEN ESTABLISHED GENERATE TARGET
+					lower_bound = 500
+					upper_bound = 1000
+					if len(self.peer_services) > 1:
+						lower_bound = 500
+						upper_bound = 1000
+					elif len(self.peer_services) > 2:
+						lower_bound = 5000
+						upper_bound = 20000
+					elif len(self.peer_services) > 10:
+						lower_bound = 2500
+						upper_bound = 20000
 
-						self.peer_clients.remove(client) #REMOVE FROM PEER CLIENTS LIST
+		
+					random_number = random.randint(lower_bound,upper_bound) + (65536*len(self.txn_pool))#4096#16777216)#,286331153)#572662306)#1431655765)#268435456,#858993459) #TARGET IS A 8 BYTE INTEGER
 
-						client.close() #CLOSE CLIENTS
+					target = random_number.to_bytes(4, byteorder='big').hex() #FORMAT RANDOM NUMBER TO HEX VALUE
 
-						self.print("Connection Broken")
+					json_message = {'Type':9,'Target':target} #PREPARE RETURN MESSAGE
 
-						return
+					self.node_target = target #SET TARGET VALUE
 
-					if message: #MESSAGE WAS RECEIVED
+					self.print("Target Established:{0}".format(self.node_target)) #DISPLAY TARGET
 
-						json_message = json.loads(message.decode('utf-8')) #LOAD MESSAGE INTO DICT
+					self.broadcast_client_to_server(json.dumps(json_message)) #SEND TARGET FROM CLIENT TO SERVER
 
-						#RECEIVED INFORMATION ABOUT ANOTHER SERVER
-						if json_message['Type'] == 0: #IF MESSAGE TYPE = 0
+					self.setting_target = False
 
-							if self.connect_server == False and json_message['Address'] + ":" + str(json_message['Port']) not in self.peer_services:
+				#IF CHAIN DOWNLOADED TARGET ALREADY ESTABLISHED BY CHAIN SET TARGET
+				elif json_message['Type'] == 9 and self.chain_downloaded:
 
-								threading.Thread(target=self.start_client,args=(json_message['Address'],int(json_message["Port"]))).start() #OPEN NEW THREAD TO CREATE A NEW CLIENT TO CONNECT TO NEW SERVER
+					self.node_target = json_message['Target']  #SET TARGET VALUE
 
-							#IF SERVER DOESN'T ALREADY EXIST IN PEER SERVICES AND SERVER NOT LOCAL SERVER
-							elif json_message['Address'] + ":" + str(json_message['Port']) not in self.peer_services and json_message['Address'] + ":" + str(json_message['Port']) != (self.server_address + ":" + str(self.server_port)):
+					self.print("Chain Target:{0}".format(self.node_target)) #DISPLAY TARGET
 
-								threading.Thread(target=self.start_client,args=(json_message['Address'],json_message["Port"])).start() #OPEN NEW THREAD TO CREATE A NEW CLIENT TO CONNECT TO NEW SERVER
 
-						#RECEIVE CHAIN SIZE
-						elif json_message['Type'] == 3:
+				elif json_message['Type'] == 10:
 
-							
+					block_hash = hash_block_dict(json_message['Block'])
 
-							print("Chain Size Received:",json_message['Chain_Size'])
-							
-							if json_message['Chain_Size'] in self.chain_sizes: #IF CHAIN SIZE HAS ALREADY BEEN RECORDED
+					#print("SAVING NEWLY MINED BLOCKED")
 
-								self.chain_size_confirmations += 1 #INCREMENT COUNTER
+					if block_hash.hex() not in self.block_hashes and self.block_saving == False:
 
-								if self.chain_size_confirmations >= self.CHAIN_SIZE_MIN_CONFIRMATIONS: #IF CONFIRMATIONS 
+						self.block_confirmations = 0 #RESET BLOCK CONFIRMATIONS TO ZERO
 
-									self.confirmed_size = json_message['Chain_Size'] #APPLY CHAIN SIZE AS CONFIRMED CHAIN SIZE
+						self.pending_block_hashes = {} #RESET PENDING BLOCK CONFIRMATIONS TO BLANK
 
-							else:
+						print("Setting Target to None")
 
-								self.chain_sizes.append(json_message['Chain_Size']) #IF CHAIN SIZE HAS NOT BEEN SEEN BEFORE ADD IT TO ARRAY
+						self.node_target = None #SET TARGET BACK TO NONE
 
-						#IF CHAIN HAS BEEN FULLY DOWNLOADED NETWORK REQUESTS A TARGET FOR THE NEXT BLOCK
-						elif json_message['Type'] == 8 and self.chain_downloaded and self.node_target == None and self.setting_target == False:
+						self.block_saving = True
 
-							self.setting_target = True
+						self.block_added = True
 
-							print("RECEIVED TYPE 8")
-							#NO TARGET HAS BEEN ESTABLISHED GENERATE TARGET
-							lower_bound = 500
-							upper_bound = 1000
-							if len(self.peer_services) > 1:
-								lower_bound = 500
-								upper_bound = 1000
-							elif len(self.peer_services) > 2:
-								lower_bound = 5000
-								upper_bound = 20000
-							elif len(self.peer_services) > 10:
-								lower_bound = 2500
-								upper_bound = 20000
+						print("SAVING BLOCK 2")
+
+						save_block(self.chain_directory,json_message['Block']) #WRITE BLOCK TO CHAIN FILE
+
+						if block_hash.hex() not in self.block_hashes: 
+
+							self.block_hashes.append(block_hash.hex()) #APPEND BLOCK HASH TO LIST OF EXISTING HASHES
+
+						self.block_thread = False #RELEASE THREAD
+
+						if (len(json_message['Block']['txns']) > 1): #REMOVE MINED TRANSACTIONS FROM THE MEM POOL TO PREVENT DUPLICATION
+
+							for txn in json_message['Block']['txns'][1:]: #
+
+								if (txn in self.txn_pool):
+
+									self.txn_pool.remove(txn)
+
+						self.update_chain()
+
+						while self.chain_updating:
+							continue
+						
+						self.block_saving = False
 
 				
-							random_number = random.randint(lower_bound,upper_bound) + (65536*len(self.txn_pool))#4096#16777216)#,286331153)#572662306)#1431655765)#268435456,#858993459) #TARGET IS A 8 BYTE INTEGER
+				# IF MESSAGE RECEIVED WITH TYPE 11 MINED BLOCK WAS REJECTED BY THE NETWORK
+				elif json_message['Type'] == 11 and self.chain_downloaded:
+					self.block_confirmations = -1
+				
+				# IF TYPE = 12 REQUESTED BLOCK INFORMATION RECEIVED
+				elif json_message['Type'] == 12:
 
-							target = random_number.to_bytes(4, byteorder='big').hex() #FORMAT RANDOM NUMBER TO HEX VALUE
+					# IF FILE WAS ALREADY RECEIVED BEFORE THIS MESSAGE WAS SENT IGNORE
+					if (os.path.exists(os.path.join(self.chain_directory,json_message['Filename']))):
+						continue
+					
+					#CHECK THE CHAIN TO CONFIRM THE BLOCKS RECEIVED ARE CORRECT AND COMPLETE
+					try:
+						prev_hash = bytearray(32).hex() #INITIALIZE HASH VARIABLE
 
-							json_message = {'Type':9,'Target':target} #PREPARE RETURN MESSAGE
+						if len(self.block_hashes) > 0: #IF BLOCK_HASHES HAS VALUES
 
-							self.node_target = target #SET TARGET VALUE
+							prev_hash = self.block_hashes[-1] #SET PREV HASH TO LAST VALUE IN ARRAY
 
-							self.print("Target Established:{0}".format(self.node_target)) #DISPLAY TARGET
+						assert(json_message['Block']['prev_block_hash'] == prev_hash) #ASSERT LAST HASH IN LOCAL CHAIN EQUAL TO LAST HASH OF RECEIVED BLOCK
 
-							self.broadcast_client_to_server(json.dumps(json_message)) #SEND TARGET FROM CLIENT TO SERVER
+					except:
+						self.print("Chain Corrupted") #NOTIFY LOCAL CHAIN MAY BE CORRUPTED
+						continue
+						#raise Exception("Chain Corrupted") RAISE EXCEPTION IF NECESSARY
+					
+					#IF ASSERTION SUCCESSFUL OPEN FILE TO WRITE TO
+					with open(os.path.join(self.chain_directory,json_message['Filename']), 'w') as handle:
 
-							self.setting_target = False
+						b = json_message['Block'] #LOAD BLOCK FROM RECEIVED MESSAGE
 
-						#IF CHAIN DOWNLOADED TARGET ALREADY ESTABLISHED BY CHAIN SET TARGET
-						elif json_message['Type'] == 9 and self.chain_downloaded:
+						json.dump(b, handle) #SAVE BLOCK TO CHAIN LOCATION
 
-							self.node_target = json_message['Target']  #SET TARGET VALUE
+					block_hash = hash_block_dict(b)
 
-							self.print("Chain Target:{0}".format(self.node_target)) #DISPLAY TARGET
+					if block_hash.hex() not in self.block_hashes: 
 
+						self.block_hashes.append(block_hash.hex()) #HASH BLOCK AND ADD TO BLOCK HASHES LISTING
 
-						elif json_message['Type'] == 10:
+					self.wait_download = False #RELEASE MAIN THREAD OF DOWNLOAD HALT
 
-							block_hash = hash_block_dict(json_message['Block'])
+				#TXN POOL
+				#THE TXN POOL IS LISTING OF TRANSACTIONS ACROSS NETWORK THAT NEED TO BE MINED
+				#WHEN CONNECTION IS ESTABLISHED UPDATED LISTING OF TXN POOL IS PROVIDED
+				elif json_message['Type'] == 16:
+					
+					mem_pool = json_message["Mem_Pool"] #RECEIVE POOL
 
-							#print("SAVING NEWLY MINED BLOCKED")
+					mem_pool_hash = hash_block(json.dumps(mem_pool).encode()) #HASH THE POOL
 
-							if block_hash.hex() not in self.block_hashes and self.block_saving == False:
+					if mem_pool_hash in self.txn_pool_hashes: #IF HASH IS ALREADY IN MEM POOL HASHES INCREASE CONFIRMATIONS
 
-								self.block_confirmations = 0 #RESET BLOCK CONFIRMATIONS TO ZERO
+						self.mem_pool_confirmations += 1 #INCREMENT CONFIRMATIONS OF MEM POOL
 
-								self.pending_block_hashes = {} #RESET PENDING BLOCK CONFIRMATIONS TO BLANK
+					else:
 
-								print("Setting Target to None")
+						self.txn_pool_hashes.append(mem_pool_hash)  #IF HASH DOESN'T ALREADY EXIST IN MEM POOL APPEND
 
-								self.node_target = None #SET TARGET BACK TO NONE
+					if self.mem_pool_confirmations >= self.MEM_POOL_MIN_CONFIRMATIONS or len(self.peer_services) < 2: #IF MEM POOL CONFIRMATIONS GREATER THAN OR EQUAL TO MIN CONFIRMATIONS OR AVAILABLE PEERS LESS THAN 2 MEM POOL IS AVAILABLE MEM POOL
 
-								self.block_saving = True
+						self.txn_pool = mem_pool #SET MEM POOL
 
-								self.block_added = True
-
-								print("SAVING BLOCK 2")
-
-								save_block(self.chain_directory,json_message['Block']) #WRITE BLOCK TO CHAIN FILE
-
-								if block_hash.hex() not in self.block_hashes: 
-
-									self.block_hashes.append(block_hash.hex()) #APPEND BLOCK HASH TO LIST OF EXISTING HASHES
-
-								self.block_thread = False #RELEASE THREAD
-
-								if (len(json_message['Block']['txns']) > 1): #REMOVE MINED TRANSACTIONS FROM THE MEM POOL TO PREVENT DUPLICATION
-
-									for txn in json_message['Block']['txns'][1:]: #
-
-										if (txn in self.txn_pool):
-
-											self.txn_pool.remove(txn)
-
-								self.update_chain()
-
-								while self.chain_updating:
-									continue
-								
-								self.block_saving = False
-
-						
-						# IF MESSAGE RECEIVED WITH TYPE 11 MINED BLOCK WAS REJECTED BY THE NETWORK
-						elif json_message['Type'] == 11 and self.chain_downloaded:
-							self.block_confirmations = -1
-						
-						# IF TYPE = 12 REQUESTED BLOCK INFORMATION RECEIVED
-						elif json_message['Type'] == 12:
-
-							# IF FILE WAS ALREADY RECEIVED BEFORE THIS MESSAGE WAS SENT IGNORE
-							if (os.path.exists(os.path.join(self.chain_directory,json_message['Filename']))):
-								continue
-							
-							#CHECK THE CHAIN TO CONFIRM THE BLOCKS RECEIVED ARE CORRECT AND COMPLETE
-							try:
-								prev_hash = bytearray(32).hex() #INITIALIZE HASH VARIABLE
-
-								if len(self.block_hashes) > 0: #IF BLOCK_HASHES HAS VALUES
-
-									prev_hash = self.block_hashes[-1] #SET PREV HASH TO LAST VALUE IN ARRAY
-
-								assert(json_message['Block']['prev_block_hash'] == prev_hash) #ASSERT LAST HASH IN LOCAL CHAIN EQUAL TO LAST HASH OF RECEIVED BLOCK
-
-							except:
-								self.print("Chain Corrupted") #NOTIFY LOCAL CHAIN MAY BE CORRUPTED
-								continue
-								#raise Exception("Chain Corrupted") RAISE EXCEPTION IF NECESSARY
-							
-							#IF ASSERTION SUCCESSFUL OPEN FILE TO WRITE TO
-							with open(os.path.join(self.chain_directory,json_message['Filename']), 'w') as handle:
-
-								b = json_message['Block'] #LOAD BLOCK FROM RECEIVED MESSAGE
-
-								json.dump(b, handle) #SAVE BLOCK TO CHAIN LOCATION
-
-							block_hash = hash_block_dict(b)
-
-							if block_hash.hex() not in self.block_hashes: 
-
-								self.block_hashes.append(block_hash.hex()) #HASH BLOCK AND ADD TO BLOCK HASHES LISTING
-
-							self.wait_download = False #RELEASE MAIN THREAD OF DOWNLOAD HALT
-
-						#TXN POOL
-						#THE TXN POOL IS LISTING OF TRANSACTIONS ACROSS NETWORK THAT NEED TO BE MINED
-						#WHEN CONNECTION IS ESTABLISHED UPDATED LISTING OF TXN POOL IS PROVIDED
-						elif json_message['Type'] == 16:
-							
-							mem_pool = json_message["Mem_Pool"] #RECEIVE POOL
-
-							mem_pool_hash = hash_block(json.dumps(mem_pool).encode()) #HASH THE POOL
-
-							if mem_pool_hash in self.txn_pool_hashes: #IF HASH IS ALREADY IN MEM POOL HASHES INCREASE CONFIRMATIONS
-
-								self.mem_pool_confirmations += 1 #INCREMENT CONFIRMATIONS OF MEM POOL
-
-							else:
-
-								self.txn_pool_hashes.append(mem_pool_hash)  #IF HASH DOESN'T ALREADY EXIST IN MEM POOL APPEND
-
-							if self.mem_pool_confirmations >= self.MEM_POOL_MIN_CONFIRMATIONS or len(self.peer_services) < 2: #IF MEM POOL CONFIRMATIONS GREATER THAN OR EQUAL TO MIN CONFIRMATIONS OR AVAILABLE PEERS LESS THAN 2 MEM POOL IS AVAILABLE MEM POOL
-
-								self.txn_pool = mem_pool #SET MEM POOL
-
-								self.block_thread = False #RELEASE MAIN THREAD
+						self.block_thread = False #RELEASE MAIN THREAD
 
 	#START CLIENT CONNECTION
 	def start_client(self, connect_address, connect_port):
