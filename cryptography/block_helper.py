@@ -160,7 +160,7 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
 
     node.print("Mining")
 
-    self.confirmed_txns = []
+    confirmed_txns = []
 
     while block_hash > (bytes.fromhex(blocks['target']) + bytearray(28)): #CHECK IF HASH IS BELOW TARGET LOOP UNTIL HASH IS BELOW TARGET
 
@@ -185,7 +185,7 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
 
         for x,txn in enumerate(blocks['txns']):
 
-            if txn in self.confirmed_txns:
+            if txn in confirmed_txns:
                 continue
 
             if x == 0:
@@ -206,7 +206,7 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
 
                 block_out_value += output_val['value'] #INCREMENT TOTAL OUTPUT VALUE
 
-            self.confirmed_txns.append(txn)
+            confirmed_txns.append(txn)
             
         
         blocks['txns'][0]['outputs'][0]['value'] += (block_in_value - block_out_value)
