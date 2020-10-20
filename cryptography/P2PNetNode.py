@@ -256,11 +256,13 @@ class P2PNetNode:
 
 					message += conn.recv(recv_amount)
 
+					time.sleep(1)
+
 					recv_length += recv_amount
 
-					if (recv_length + 1024 > length):
+					#if (recv_length + 1024 > length):
 
-						recv_amount = length - recv_length
+					#	recv_amount = length - recv_length
 
 			else:
 
@@ -633,14 +635,16 @@ class P2PNetNode:
 					while recv_length < length:
 
 						message += client.recv(recv_amount)
+
+						time.sleep(1)
 						
 						#print(message)
 
 						recv_length += 1024
 
-						if (recv_length + 1024 > length):
+						#if (recv_length + 1024 > length):
 
-							recv_amount = length - recv_length
+						#	recv_amount = length - recv_length
 
 				else:
 
