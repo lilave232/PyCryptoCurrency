@@ -244,6 +244,8 @@ class P2PNetNode:
 
 			length = int.from_bytes(conn.recv(8),'big')
 
+			print(length)
+
 			if length > 2048:
 
 				recv_length = 0
@@ -255,8 +257,10 @@ class P2PNetNode:
 				while recv_length < length:
 
 					message += conn.recv(recv_amount)
+					
+					print(recv_length)
 
-					recv_length += 2048
+					recv_length += recv_amount
 
 					if (recv_length + 2048 > length):
 
@@ -265,8 +269,6 @@ class P2PNetNode:
 			else:
 
 				message = conn.recv(length)
-
-			print(message)
 			
 			if message:
 
