@@ -244,7 +244,7 @@ class P2PNetNode:
 
 			length = int.from_bytes(conn.recv(8),'big')
 
-			print("Amount to Read:",length)
+			print("Message Length:",length)
 
 			if length > 2048:
 
@@ -254,19 +254,15 @@ class P2PNetNode:
 
 				recv_amount = 2048
 
-				while recv_length <= length - 1:
+				while recv_length < length:
 
 					message += conn.recv(recv_amount)
-
-					print(message)
 
 					recv_length += recv_amount
 
 					if (recv_length + 2048 > length):
 
 						recv_amount = length - recv_length
-
-					print("Amount Read:",recv_length)
 
 			else:
 
@@ -542,6 +538,8 @@ class P2PNetNode:
 			try:
 
 				length = len(message.encode()).to_bytes(8, byteorder='big') #GET MESSAGE LENGTH AND CONVERT TO 8 BYTE VALUE
+
+				print("Message Sent Length:",length)
 
 				clients.send(length + message.encode()) #SEND FROM CLIENT CONNECTIONS TO SERVER
 
