@@ -1257,7 +1257,7 @@ class P2PNetNode:
 
 			if self.node_target != None:
 
-				self.node_target = int(int.from_bytes(bytes.fromhex(self.node_target),byteorder='big') + 262144).to_bytes(4,byteorder='big').hex()
+				self.node_target = int(int.from_bytes(bytes.fromhex(self.node_target),byteorder='big') + 131072).to_bytes(4,byteorder='big').hex()
 
 				print("Target Updated: ", self.node_target)
 
