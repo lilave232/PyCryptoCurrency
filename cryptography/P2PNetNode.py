@@ -244,19 +244,13 @@ class P2PNetNode:
 
 			length = int.from_bytes(conn.recv(8),'big')
 
-			message = conn.recv(length)
-
-			print("Message:",message.decode("utf-8"))
-
-			""" 			print("Message Length:",length)
-
-			if length > 2048:
+			if length > 1024:
 
 				recv_length = 0
 
 				message = bytes()
 
-				recv_amount = 2048
+				recv_amount = 1024
 
 				while recv_length < length:
 
@@ -264,11 +258,16 @@ class P2PNetNode:
 
 					recv_length += recv_amount
 
-					if (recv_length + 2048 > length):
+					if (recv_length + 1024 > length):
 
 						recv_amount = length - recv_length
 
-			else: """
+			else:
+
+				message = conn.recv(length)
+
+			print("Message:",message.decode("utf-8"))
+
 			
 			if message:
 
@@ -623,13 +622,13 @@ class P2PNetNode:
 			
 				length = int.from_bytes(client.recv(8),'big')
 
-				if length > 2048:
+				if length > 1024:
 
 					recv_length = 0
 
 					message = bytes()
 
-					recv_amount = 2048
+					recv_amount = 1024
 
 					while recv_length < length:
 
@@ -637,9 +636,9 @@ class P2PNetNode:
 						
 						#print(message)
 
-						recv_length += 2048
+						recv_length += 1024
 
-						if (recv_length + 2048 > length):
+						if (recv_length + 1024 > length):
 
 							recv_amount = length - recv_length
 
