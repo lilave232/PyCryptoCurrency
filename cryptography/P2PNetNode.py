@@ -1344,6 +1344,8 @@ class P2PNetNode:
 			
 			json_message = {"Type":14, "TXID":txn['txnid'],"Txn":txn} #SEND CONFIRMATION MESSAGE
 
+			print(json.dumps(json_message))
+
 			self.broadcast_client_to_server(json.dumps(json_message)) #BROADCAST MESSAGE
 
 			if txn['txnid'] in self.txn_confirmations:
