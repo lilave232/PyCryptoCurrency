@@ -254,7 +254,7 @@ class P2PNetNode:
 
 				recv_amount = 2048
 
-				while recv_length <= length:
+				while recv_length <= length + 1:
 
 					message += conn.recv(recv_amount)
 
