@@ -246,8 +246,6 @@ class P2PNetNode:
 
 			message = conn.recv(length)
 
-			time.sleep(1)
-
 			""" 			print("Message Length:",length)
 
 			if length > 2048:
@@ -272,7 +270,7 @@ class P2PNetNode:
 			
 			if message:
 
-				json_message = json.loads(message.decode('utf-8'))
+				json_message = json.load(message)
 
 				#SEND SERVER INFORMATION
 				if json_message['Type'] == 0:
