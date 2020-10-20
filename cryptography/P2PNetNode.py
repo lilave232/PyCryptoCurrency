@@ -260,15 +260,15 @@ class P2PNetNode:
 
 					recv_length += recv_amount
 
-					#if (recv_length + 1024 > length):
+					if (recv_length + 1024 > length):
 
-					#	recv_amount = length - recv_length
+						recv_amount = length - recv_length
 
 			else:
 
 				message = conn.recv(length)
 
-			print("Message:",message.decode("utf-8"))
+			#print("Message:",message.decode("utf-8"))
 
 			
 			if message:
@@ -642,9 +642,9 @@ class P2PNetNode:
 
 						recv_length += 1024
 
-						#if (recv_length + 1024 > length):
+						if (recv_length + 1024 > length):
 
-						#	recv_amount = length - recv_length
+							recv_amount = length - recv_length
 
 				else:
 
