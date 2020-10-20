@@ -161,6 +161,10 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
     node.print("Mining")
 
     confirmed_txns = []
+    
+    block_in_value = 0
+    block_out_value = 0
+
 
     while block_hash > (bytes.fromhex(blocks['target']) + bytearray(28)): #CHECK IF HASH IS BELOW TARGET LOOP UNTIL HASH IS BELOW TARGET
 
@@ -177,9 +181,6 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
         coinbase_txn = gen_coinbase_txn(pubKeyHash)
 
         blocks['txns'].append(coinbase_txn) #APPEND COINBASE TXN
-
-        block_in_value = 0
-        block_out_value = 0
 
         for x,txn in enumerate(node.txn_pool):
 
