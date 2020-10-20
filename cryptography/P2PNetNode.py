@@ -539,7 +539,7 @@ class P2PNetNode:
 
 				length = len(message.encode()).to_bytes(8, byteorder='big') #GET MESSAGE LENGTH AND CONVERT TO 8 BYTE VALUE
 
-				print("Message Sent Length:",length)
+				print("Message Sent Length:",len(message.encode()))
 
 				clients.send(length + message.encode()) #SEND FROM CLIENT CONNECTIONS TO SERVER
 
