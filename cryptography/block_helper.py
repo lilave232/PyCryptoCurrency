@@ -178,12 +178,10 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
 
         blocks['txns'].append(coinbase_txn) #APPEND COINBASE TXN
 
-        blocks['txns'].extend(node.txn_pool) #EXTEND ARRAY TO INCLUDE TXNS
-
         block_in_value = 0
         block_out_value = 0
 
-        for x,txn in enumerate(blocks['txns']):
+        for x,txn in enumerate(node.mempool):
 
             if txn in confirmed_txns:
                 continue
@@ -207,7 +205,8 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
                 block_out_value += output_val['value'] #INCREMENT TOTAL OUTPUT VALUE
 
             confirmed_txns.append(txn)
-            
+
+        blocks['txns'].extend(confirmed_txns) #EXTEND ARRAY TO INCLUDE TXNS
         
         blocks['txns'][0]['outputs'][0]['value'] += (block_in_value - block_out_value)
 
