@@ -186,10 +186,6 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
             if txn in confirmed_txns:
                 continue
 
-            if x == 0:
-
-                continue
-
             for x, input_val in enumerate(txn['inputs']):
 
                 prev_txn = get_txn(input_val['prev_txid'],node.chain_directory) #GET PREVIOUS TXN

@@ -717,7 +717,7 @@ class P2PNetNode:
 							upper_bound = 20000
 
 			
-						random_number = random.randint(lower_bound,upper_bound) + (65536*len(self.txn_pool))#4096#16777216)#,286331153)#572662306)#1431655765)#268435456,#858993459) #TARGET IS A 8 BYTE INTEGER
+						random_number = random.randint(lower_bound,upper_bound)#4096#16777216)#,286331153)#572662306)#1431655765)#268435456,#858993459) #TARGET IS A 8 BYTE INTEGER
 
 						target = random_number.to_bytes(4, byteorder='big').hex() #FORMAT RANDOM NUMBER TO HEX VALUE
 
@@ -1263,7 +1263,7 @@ class P2PNetNode:
 
 			if self.node_target != None:
 
-				self.node_target = int(int.from_bytes(bytes.fromhex(self.node_target),byteorder='big') + 65536).to_bytes(4,byteorder='big').hex()
+				self.node_target = int(int.from_bytes(bytes.fromhex(self.node_target),byteorder='big')).to_bytes(4,byteorder='big').hex()
 
 				print("Target Updated: ", self.node_target)
 
