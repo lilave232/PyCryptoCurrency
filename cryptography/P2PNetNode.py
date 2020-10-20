@@ -246,7 +246,7 @@ class P2PNetNode:
 
 			message = conn.recv(length)
 
-			#print("Message:",message.decode("utf-8"))
+			print("Message:",message.decode("utf-8"))
 
 			""" 			print("Message Length:",length)
 
