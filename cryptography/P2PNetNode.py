@@ -246,7 +246,7 @@ class P2PNetNode:
 
 			message = conn.recv(length)
 
-			print("Message:",message.decode("utf-8"))
+			#print("Message:",message.decode("utf-8"))
 
 			""" 			print("Message Length:",length)
 
@@ -542,7 +542,7 @@ class P2PNetNode:
 
 				length = len(message.encode()).to_bytes(8, byteorder='big') #GET MESSAGE LENGTH AND CONVERT TO 8 BYTE VALUE
 
-				print("Message:",message.encode().hex())
+				print("Sending:",message.encode().decode("utf-8"))
 
 				clients.send(length + message.encode()) #SEND FROM CLIENT CONNECTIONS TO SERVER
 
