@@ -246,6 +246,8 @@ class P2PNetNode:
 
 			message = conn.recv(length)
 
+			print("Message:",message.hex())
+
 			""" 			print("Message Length:",length)
 
 			if length > 2048:
@@ -270,7 +272,7 @@ class P2PNetNode:
 			
 			if message:
 
-				json_message = json.load(message)
+				json_message = json.loads(message.decode("utf-8"))
 
 				#SEND SERVER INFORMATION
 				if json_message['Type'] == 0:
@@ -503,6 +505,7 @@ class P2PNetNode:
 
 					length = len(message.encode()).to_bytes(8, byteorder='big') #GET MESSAGE LENGTH AND CONVERT TO 8 BYTE VALUE
 
+
 					clients.send(length + message.encode()) #SEND MESSAGE LENGTH AS FIRST 8 BYTES AND MESSAGE AS REMAINING
 
 				except: 
@@ -539,7 +542,7 @@ class P2PNetNode:
 
 				length = len(message.encode()).to_bytes(8, byteorder='big') #GET MESSAGE LENGTH AND CONVERT TO 8 BYTE VALUE
 
-				print("Message Sent Length:",len(message.encode()))
+				print("Message:",message.encode().hex())
 
 				clients.send(length + message.encode()) #SEND FROM CLIENT CONNECTIONS TO SERVER
 
