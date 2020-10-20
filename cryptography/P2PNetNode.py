@@ -266,7 +266,7 @@ class P2PNetNode:
 
 			else: """
 
-				message = conn.recv(length)
+			message = conn.recv(length)
 			
 			if message:
 
