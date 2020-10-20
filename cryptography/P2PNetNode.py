@@ -713,7 +713,7 @@ class P2PNetNode:
 								upper_bound = 20000
 
 				
-							random_number = random.randint(lower_bound,upper_bound) + (262144*len(self.txn_pool))#4096#16777216)#,286331153)#572662306)#1431655765)#268435456,#858993459) #TARGET IS A 8 BYTE INTEGER
+							random_number = random.randint(lower_bound,upper_bound) + (131072*len(self.txn_pool))#4096#16777216)#,286331153)#572662306)#1431655765)#268435456,#858993459) #TARGET IS A 8 BYTE INTEGER
 
 							target = random_number.to_bytes(4, byteorder='big').hex() #FORMAT RANDOM NUMBER TO HEX VALUE
 
