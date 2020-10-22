@@ -256,7 +256,7 @@ class P2PNetNode:
 
 					message += conn.recv(recv_amount)
 
-					time.sleep(1)
+					time.sleep(0.1)
 
 					recv_length += recv_amount
 
@@ -636,7 +636,7 @@ class P2PNetNode:
 
 						message += client.recv(recv_amount)
 
-						time.sleep(1)
+						time.sleep(0.1)
 						
 						#print(message)
 
