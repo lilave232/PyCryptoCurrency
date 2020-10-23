@@ -164,7 +164,7 @@ def process_commands(command_entry):
 		if node.mining == True:
 
 			print("Must Stop Mining to Get Balance")
-			
+
 			return
 		
 		node.download_chain() #DOWNLOAD THE CHAIN
@@ -190,7 +190,7 @@ def process_commands(command_entry):
 
 		node.download_chain() #UPDATE THE CHAIN
 
-		node.loopmine = True
+		node.loop_mine = True
 
 		node.mine_thread = threading.Thread(target=node.chain_mine,args=(True,True))
 
