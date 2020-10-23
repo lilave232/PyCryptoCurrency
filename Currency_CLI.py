@@ -198,6 +198,8 @@ def process_commands(command_entry):
 			print("Did not start mining")
 			return
 
+		node.stop_mining
+
 		node.loopmine = False
 		
 		node.mine_thread.join()

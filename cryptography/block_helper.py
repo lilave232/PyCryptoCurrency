@@ -161,12 +161,12 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
     node.print("Mining")
 
     confirmed_txns = []
-    
+
     block_in_value = 0
     block_out_value = 0
 
 
-    while block_hash > (bytes.fromhex(blocks['target']) + bytearray(28)): #CHECK IF HASH IS BELOW TARGET LOOP UNTIL HASH IS BELOW TARGET
+    while block_hash > (bytes.fromhex(blocks['target']) + bytearray(28)) and node.stop_mining == False: #CHECK IF HASH IS BELOW TARGET LOOP UNTIL HASH IS BELOW TARGET
 
         #print("Mining")
 
@@ -216,6 +216,9 @@ def gen_block(pubKeyHash, prev_block_hash,node): #GENERATE BLOCK
         blocks['time'] = int(time.time()) #SET TIME TO REFLECT MORE RECENT MINE TIME
 
         block_hash = hash_block_dict(blocks) #HASH BLOCK
+    
+    if node.stop_mining == True:
+        return False
 
     node.print("Completed Mining")
 
