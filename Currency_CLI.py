@@ -164,14 +164,19 @@ def process_commands(command_entry):
 		if node.mining == True:
 
 			print("Must Stop Mining to Get Balance")
-
 			return
 		
 		node.download_chain() #DOWNLOAD THE CHAIN
 
 		node.update_pool()
 		
-		threading.Thread(target=wallet.get_wallet_balance,args=(node,)).start() #GET BALANCES
+		wallet_balance, unconfirmed_balance, usable_balance = wallet.get_wallet_balance(node) #GET BALANCES
+
+		print("Balance Is: {:.8f}".format(wallet_balance)) #PRINT WALLET BALANCE
+
+		print("Unconfirmed Balance Is: {:.8f}".format(unconfirmed_balance)) #PRINT UNCONFIRMED BALANCE
+
+		print("Usable Balance Is: {:.8f}".format(usable_balance)) #PRINT USABLE BALANCE
 
 		#wallet.list_utxos(node) #PRINT UTXOS
 
@@ -190,7 +195,7 @@ def process_commands(command_entry):
 
 		node.download_chain() #UPDATE THE CHAIN
 
-		node.loop_mine = True
+		node.loopmine = True
 
 		node.mine_thread = threading.Thread(target=node.chain_mine,args=(True,True))
 
