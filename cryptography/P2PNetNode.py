@@ -1181,7 +1181,7 @@ class P2PNetNode:
 			while self.block_thread: #BLOCK THREAD WAITING FOR CONFIRMATIONS
 
 				if self.block_confirmations == -1 or time.time() > timeout: #IF AT ANY POINT CONFIRMATIONS -1 BLOCK CONTAINED AN ERROR
-
+					self.mining = False
 					self.print("Could Not Mine Block")
 					if self.loop_mine:
 						self.chain_mine(True)
