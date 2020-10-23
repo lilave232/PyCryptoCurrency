@@ -80,7 +80,7 @@ class P2PNetNode:
 		self.setting_target = False
 		self.mine_thread = None
 		self.node_target = None
-		self.loop_mine
+		self.loop_mine = False
 
 		#KEY BASED VARIABLES
 		self.key_directory = ""
