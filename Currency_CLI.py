@@ -165,7 +165,7 @@ def process_commands(command_entry):
 
 		node.update_pool()
 		
-		Threading(target=wallet.get_wallet_balance,args=(node,)).start() #GET BALANCES
+		Threading.thread(target=wallet.get_wallet_balance,args=(node,)).start() #GET BALANCES
 
 		#wallet.list_utxos(node) #PRINT UTXOS
 
