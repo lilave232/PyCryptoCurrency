@@ -1126,6 +1126,7 @@ class P2PNetNode:
 			while self.node_target == None:
 				if time.time() > timeout:
 					self.print("Unable to Obtain Target")
+					self.mining = False
 					if self.loop_mine:
 						self.chain_mine(True)
 					return
@@ -1152,6 +1153,7 @@ class P2PNetNode:
 
 			if block == False:
 				self.print("Failed to Mine Block")
+				self.mining = False
 				return
 			
 			block_hash = hash_block_dict(block) #GENERATE HASH OF BLOCK
