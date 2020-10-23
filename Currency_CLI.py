@@ -160,6 +160,12 @@ def process_commands(command_entry):
 			print("Must Connect First")
 
 			return
+
+		if node.mining == True:
+
+			print("Must Stop Mining to Get Balance")
+			
+			return
 		
 		node.download_chain() #DOWNLOAD THE CHAIN
 
