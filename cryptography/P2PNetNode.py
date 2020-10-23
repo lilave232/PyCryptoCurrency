@@ -62,8 +62,6 @@ class P2PNetNode:
 		self.chain_size = 0
 
 		self.wait_download = False
-		#MINING BASED VARIABLES
-		self.node_target = None
 		
 		#BLOCK CONFIRMATION VARIABLES
 		self.block_hashes = []
@@ -80,6 +78,9 @@ class P2PNetNode:
 		#MINING VARIABLES
 		self.mining = False
 		self.setting_target = False
+		self.mine_thread = None
+		self.node_target = None
+		self.loop_mine
 
 		#KEY BASED VARIABLES
 		self.key_directory = ""
@@ -1096,7 +1097,7 @@ class P2PNetNode:
 		print("Started Mining:",current_time)
 
 		try:
-			if loop_mine == True:
+			if self.loop_mine == True:
 				while len(self.peer_services) == 0:
 					continue
 				time.sleep(5)
@@ -1124,7 +1125,7 @@ class P2PNetNode:
 			while self.node_target == None:
 				if time.time() > timeout:
 					self.print("Unable to Obtain Target")
-					if loop_mine:
+					if self.loop_mine:
 						self.chain_mine(True)
 					return
 				continue
@@ -1179,7 +1180,7 @@ class P2PNetNode:
 				if self.block_confirmations == -1 or time.time() > timeout: #IF AT ANY POINT CONFIRMATIONS -1 BLOCK CONTAINED AN ERROR
 
 					self.print("Could Not Mine Block")
-					if loop_mine:
+					if self.loop_mine:
 						self.chain_mine(True)
 
 					return
@@ -1204,11 +1205,11 @@ class P2PNetNode:
 			current_time = time.strftime("%H:%M:%S", t)
 			print("Finished Mining:",current_time)
 
-			if loop_mine:
+			if self.loop_mine:
 				self.chain_mine(True)
 
 		except:
-				if loop_mine:
+				if self.loop_mine:
 						self.chain_mine(True)
 				self.mining = False
 		

@@ -83,7 +83,6 @@ def process_commands(command_entry):
 
 		node = P2PNetNode(configuration["Internal Server Address"],configuration["Connect Address"],configuration["Connect Port"],configuration["Internal Server Port"],configuration["Chain"],use_gui=False,connect_server=configuration["Connect Server"],external_server=external_server_address,external_server_port=external_server_port)
 		print("Setting Things Up")
-		time.sleep(5)
 		print("Donwloading Chain")
 		node.download_chain()
 		node.update_pool()
@@ -106,7 +105,9 @@ def process_commands(command_entry):
 
 		node.download_chain() #UPDATE THE CHAIN
 
-		threading.Thread(target=node.chain_mine).start() #MINE THE CHAIN
+		node.mine_thread = threading.Thread(target=node.chain_mine)
+
+		node.mine_thread.start() #MINE THE CHAIN
 
 
 	elif command == "sendtxn": #SEND TRANSACTION
@@ -190,7 +191,22 @@ def process_commands(command_entry):
 
 		node.download_chain() #UPDATE THE CHAIN
 
-		threading.Thread(target=node.chain_mine,args=(True,True)).start() #MINE THE CHAIN
+		node.mine_thread = threading.Thread(target=node.chain_mine,args=(True,True))
+
+		node.mine_thread.start() #MINE THE CHAIN
+
+	elif command == "stopmine":
+
+		print("Stopping Mining")
+
+		if node.mine_thread == None:
+			print("Did not start mining")
+			return
+
+		node.loopmine = False
+		
+		node.mine_thread.join()
+
 
 def signal_handler(signal, frame):
 		print("\nprogram exiting gracefully")
