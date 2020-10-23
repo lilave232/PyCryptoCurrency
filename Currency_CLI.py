@@ -161,11 +161,12 @@ def process_commands(command_entry):
 
 			return
 		
-		threading.Thread(target=node.download_chain).start() #DOWNLOAD THE CHAIN
+		node.download_chain() #DOWNLOAD THE CHAIN
 
 		node.update_pool()
 		
-		threading.Thread(target=wallet.get_wallet_balance,args=(node,)).start() #GET BALANCES
+		Threading(target=wallet.get_wallet_balance,args=(node,)).start() #GET BALANCES
+
 		#wallet.list_utxos(node) #PRINT UTXOS
 
 	elif command == "loopmine":
