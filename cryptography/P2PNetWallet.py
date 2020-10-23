@@ -31,6 +31,8 @@ import random
 
 class P2PWallet:
 
+
+
     def __init__(self):
 
         self.key_location = "keys" #INITIAL KEY LOCATION IF KEYS
@@ -38,6 +40,10 @@ class P2PWallet:
         self.keys = {} #SET KEYS TO EMPTY DICTIONARY
 
         self.utxos = {} #SET UTXOS TO EMPTY DICTIONARY
+
+        self.wallet_balance = 0
+        self.unconfirmed_balance = 0
+        self.usable_balance = 0
 
     #GET KEYS
     def get_keys(self):
@@ -154,9 +160,15 @@ class P2PWallet:
 
             usable_balance += self.utxos[utxo]['Value'] #USABLE IS SUM OF UTXOS
 
+        self.wallet_balance = wallet_balance
+        self.unconfirmed_balance = unconfirmed_balance
+        self.usable_balance = usable_balance
 
-        
-        return wallet_balance, unconfirmed_balance, usable_balance #RETURN DIFFERENT BALANCES OF TRANSACTIONS
+        print("Balance Is: {:.8f}".format(self.wallet_balance)) #PRINT WALLET BALANCE
+
+		print("Unconfirmed Balance Is: {:.8f}".format(self.unconfirmed_balance)) #PRINT UNCONFIRMED BALANCE
+
+		print("Usable Balance Is: {:.8f}".format(self.usable_balance)) #PRINT USABLE BALANCE
     
     #LIST AVAILABLE UTXOS
     def list_utxos(self,node):
