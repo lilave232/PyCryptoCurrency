@@ -198,11 +198,13 @@ def process_commands(command_entry):
 			print("Did not start mining")
 			return
 
-		node.stop_mining
+		node.stop_mining = True
 
 		node.loopmine = False
 		
 		node.mine_thread.join()
+
+		node.stop_mining = False
 
 
 def signal_handler(signal, frame):
