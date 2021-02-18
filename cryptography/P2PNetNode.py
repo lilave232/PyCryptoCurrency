@@ -28,6 +28,8 @@ import random
 
 import sys, signal
 
+import tkinter as tk
+
 class P2PNetNode:
 
 	def __init__(self,server_address,connect_address,initial_port,server_port,chain_directory = "chain", use_gui = False, listbox = None, connect_server = True, external_server = False, external_server_port = False):
