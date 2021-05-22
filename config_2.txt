@@ -1,1 +1,0 @@
-{"Connect Address": "192.168.0.144", "Connect Port": 2666, "Internal Server Address": "192.168.0.152","Internal Server Port": 8000, "Connect Server": true, "Chain": "chain2", "Keys": "keys2"}

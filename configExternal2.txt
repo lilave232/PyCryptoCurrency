@@ -1,1 +1,0 @@
-{"Connect Address": "192.168.0.111", "Connect Port": 2666, "Server Address": "192.168.0.111", "Server Port": 8000, "Connect Server": true, "Chain": "chain2", "Keys": "keys2"}

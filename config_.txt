@@ -1,1 +1,0 @@
-{"Connect Address": "localhost", "Connect Port": 8000, "Server Address": "localhost", "Server Port": 2666, "Connect Server": false}
