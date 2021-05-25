@@ -3,27 +3,32 @@ import os
 from crypto.cryptography import *
 import pickle
 import json
-class Wallet:
-	directory = None
-	controller = None
-	node = None
-	keys = {}
-	utxos = {}
+class Wallet(object):
 
 	def __init__(self,node,controller, key_dir="keys"):
+		self.directory = None
+		self.controller = None
+		self.node = None
+		self.keys = {}
+		self.utxos = {}
+		self.unconfirmed_utxos = {}
+		self.unconfirmed_inputs = {}
 		self.node = node
 		self.controller = controller
 		self.setkeydir(key_dir)
 
 	def setkeydir(self,directory):
 		self.directory = directory
-		if os.path.isdir(directory) == False:
+		if os.path.isdir(os.path.join(os.getcwd(),directory)) == False:
 			path = os.getcwd()
 			os.mkdir(os.path.join(path,directory))
 		self.indexKeys()
 		self.indexUTXOS()
 
 	def updateWallet(self):
+		self.utxos = {}
+		self.unconfirmed_utxos = {}
+		self.unconfirmed_inputs = {}
 		self.indexKeys()
 		self.indexUTXOS()
 
@@ -75,11 +80,21 @@ class Wallet:
 
 		for txn in self.controller.txn_pool:
 
+			for x, output in enumerate(txn['outputs']):
+
+				if output['address'] in self.keys:
+
+					self.unconfirmed_utxos[txn['txnid'] + str(x)] = {"TxID":txn['txnid'],"Value": output['value'], "Location":x, "Address":output['address']}
+
+					#self.utxos[txn['txnid'] + str(x)] = {"TxID":txn['txnid'],"Value": output['value'], "Location":x, "Address":output['address']}
+
 			for x, in_val in enumerate(txn['inputs']):
 
 				if in_val['prev_txid'] + str(in_val['prev_txn_output']) in self.utxos:
 
-						del self.utxos[in_val['prev_txid'] + str(in_val['prev_txn_output'])]
+					self.unconfirmed_inputs[in_val['prev_txid'] + str(in_val['prev_txn_output'])] = self.utxos[in_val['prev_txid'] + str(in_val['prev_txn_output'])]
+
+					del self.utxos[in_val['prev_txid'] + str(in_val['prev_txn_output'])]
 		
 		pickle.dump(self.utxos, open(self.controller.index_directory + "/utxos.pkl", "wb" ) )
 
@@ -133,12 +148,24 @@ class Wallet:
 
 		self.controller.send_txn(txn,pubKeys)
 
-				
 
+	def getBalance(self,type=0):
 
-	def getBalance(self):
-		
-		return sum([x['Value'] for x in self.utxos.values()])
+		if type == 0:
+			print("CONFIRMED BALANCE:",sum([x['Value'] for x in self.utxos.values()]))
+			return float("{:.8f}".format(sum([x['Value'] for x in self.utxos.values()])))
+
+		if type == 1:
+			#for x in self.unconfirmed_utxos:
+			#	if x not in self.unconfirmed_inputs:
+			#		utxos[x] = self.unconfirmed_utxos[x]
+			return float("{:.8f}".format(sum([x['Value'] for x in self.utxos.values()]) + sum([self.unconfirmed_utxos[x]['Value'] for x in self.unconfirmed_utxos if x not in self.unconfirmed_inputs])))
+
+		if type == 2:
+			#for x in self.unconfirmed_utxos:
+			#	if x not in self.unconfirmed_inputs:
+			#		utxos[x] = self.unconfirmed_utxos[x]
+			return float("{:.8f}".format(sum([x['Value'] for x in self.utxos.values()]) + sum([self.unconfirmed_inputs[x]['Value'] for x in self.unconfirmed_inputs])))
 
 	def getBalanceForKey(self,key):
 		utxos = pickle.load(open(self.controller.index_directory + "/utxos",'rb'))

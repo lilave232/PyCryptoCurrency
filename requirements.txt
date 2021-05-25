@@ -1,0 +1,16 @@
+lxml==4.6.3
+numpy==1.19.5
+typing_extensions==3.7.4.3
+ecdsa==0.16.0
+tinyec==0.3.1
+brotli==1.0.9
+Cython==0.29.23
+docutils==0.17.1
+importlib_metadata==4.0.1
+keyring==23.0.1
+lockfile==0.12.2
+ordereddict==1.1
+protobuf==3.17.0
+pyOpenSSL==20.0.1
+wincertstore==0.2
+zipp==3.4.1

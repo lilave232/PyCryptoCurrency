@@ -10,44 +10,44 @@ from ecdsa.ecdsa import Private_key, Signature
 from crypto.cryptography import *
 from chain.Wallet import *
 
-class ChainController:
-	## INIT VARIABLES
-	node = None
-	directory = None
-	index_directory = None
-	wallet = None
-	chain_downloaded = False
-	chain_verified = False
-	##
-	## DOWNLOAD CHAIN VARIABLES
-	chain_size_confirmations = {}
-	hash_verifications = {}
-	download_hash_verifications = {}
-	confirmed_size = 0
-	##
-	## INDEX VARIABLES
-	chain_size = 0
-	hashes = []
-	hash_to_file = {}
-	##
-	## MINING VARIABLES
-	block_confirmations = {}
-	mining = False
-	block_target = None
-	block_mined = False
-	target_receipts = {}
-	target_confirmations = {}
-	target_confirmed = False
-	txn_pool = []
-	confirmed_txns = []
-	txn_confirmations = {}
-	loop = False
-	##
+class ChainController(object):
 
 	## Initialization Functions ##
 	##                          ##
 	##############################
 	def __init__(self,node,directory):
+		## INIT VARIABLES
+		self.node = None
+		self.directory = None
+		self.index_directory = None
+		self.wallet = None
+		self.chain_downloaded = False
+		self.chain_verified = False
+		##
+		## DOWNLOAD CHAIN VARIABLES
+		self.chain_size_confirmations = {}
+		self.hash_verifications = {}
+		self.download_hash_verifications = {}
+		self.confirmed_size = 0
+		##
+		## INDEX VARIABLES
+		self.chain_size = 0
+		self.hashes = []
+		self.hash_to_file = {}
+		##
+		## MINING VARIABLES
+		self.block_confirmations = {}
+		self.mining = False
+		self.block_target = None
+		self.block_mined = False
+		self.target_receipts = {}
+		self.target_confirmations = {}
+		self.target_confirmed = False
+		self.txn_pool = []
+		self.confirmed_txns = []
+		self.txn_confirmations = {}
+		self.loop = False
+		##
 		self.node = node
 		self.set_directory(directory)
 		self.index_chain()
@@ -133,6 +133,7 @@ class ChainController:
 	## Step 9: When >50% of nodes confirm block, block is added to chain							##
 	##################################################################################################
 	def start_mining(self):
+		self.node.lock.acquire()
 		if self.node.server == None or self.node.server.connected == False:
 			print("Cannot Mine Must Connect to Server")
 			return
@@ -147,8 +148,9 @@ class ChainController:
 		#while self.chain_downloaded == False:
 		#	continue
 
-		if self.chain_downloaded and self.node.server != None and self.node.server.connected and len(self.node.clients) > 0:
+		if self.chain_downloaded and self.node.server != None and self.node.server.connected and len(self.node.clients) > 0 and self.mining == False:
 			self.mining = True
+			self.node.lock.release()
 			t = time.localtime()
 			current_time = time.strftime("%H:%M:%S", t)
 			print("Started Mining:",current_time)
@@ -170,6 +172,8 @@ class ChainController:
 			message = {'type':8,'block':block,'pubkey':priv_key.verifying_key.to_string().hex(),'signature':block_sig}
 
 			self.node.client_broadcast(json.dumps(message))
+		else:
+			self.node.lock.release()
 
 	def gen_coinbase_txn(self,hash):
 		reward = int(20 * (1/max(int(2*(time.time() - 1577836800)/315360000),1))) #REWARD CALCULATION VALUE OF REWARD SHOULD HALVE EVERY 10 YEARS
@@ -212,7 +216,7 @@ class ChainController:
 		if block_in_value - block_out_value > 0:
 			print("Inputs:", block_in_value, "Outputs:", block_out_value)
 
-		return block_in_value - block_out_value
+		return float("{:.8f}".format(block_in_value - block_out_value))
 
 
 	def gen_block(self):
@@ -337,12 +341,12 @@ class ChainController:
 		except:
 			print("COULD NOT CONFIRM")
 			message = {'type':8,'hash':False,'block':False}
-			self.recv_block_confirm(False,False)
 			self.node.server_broadcast(json.dumps(message))
 			self.node.lock.release()
+			self.recv_block_confirm(False,False,True)
 			return
 
-	def recv_block_confirm(self,hash,block):
+	def recv_block_confirm(self,hash,block,selfconfirm=False):
 		if hash in self.hashes:
 			return
 		self.node.lock.acquire()
@@ -356,6 +360,11 @@ class ChainController:
 				self.block_confirmations[hash] = 0
 				self.node.lock.release()
 				if self.loop:
+					if selfconfirm:
+						if self.mining:
+							print("Continue Mining")
+						return
+					self.mining = False
 					threading.Thread(target=self.start_mining).start()
 				return
 			print("New Block Confirmed")
@@ -691,23 +700,23 @@ class ChainController:
 
 			inputs.append(input_value)
 
-			in_value += value['Value']
+			in_value += float("{:.8f}".format(value['Value']))
 
-			print("Inputs", {"PrevTXID":value['TxID'],"Address:":value['Address'],"Value":value['Value']})
+			print("Inputs", {"PrevTXID":value['TxID'],"Address:":value['Address'],"Value":float("{:.8f}".format(value['Value']))})
 		
 		out_value = 0
 
 		for value in output_addresses: #FOR VALUE IN OUT VALUE
 
-			out_value += value['value'] #ADD VALUE TO OUT VALUE
+			out_value += float("{:.8f}".format(value['value'])) #ADD VALUE TO OUT VALUE
 
-			print("Outputs", {"Address:":value['address'],"Value":value['value']})
+			print("Outputs", {"Address:":value['address'],"Value":float("{:.8f}".format(value['value']))})
 		
 		if in_value > out_value: #DETERMINE IF IN VALUE GREATER THAN OUT VALUE AND RETURN CHANGE TO FIRST INPUT ADDRESS PROVIDED
 
-			output_addresses.append({"address":input_addresses[0]['Address'],"value":(in_value-out_value-fees)}) #GENERATE OUTPUTS
+			output_addresses.append({"address":input_addresses[0]['Address'],"value":float("{:.8f}".format((in_value-out_value-fees)))}) #GENERATE OUTPUTS
 
-			print({"address":input_addresses[0]['Address'],"value":(in_value-out_value-fees)})
+			print({"address":input_addresses[0]['Address'],"value":float("{:.8f}".format((in_value-out_value-fees)))})
 
 			print("Fees: ", fees)
 
@@ -744,6 +753,8 @@ class ChainController:
 
 				prev_txn = self.get_txn(input_val['prev_txid']) #GET PREVIOUS TXN
 
+				print("Confirmed Previous Transaction ID")
+
 				if prev_txn == False: #IF THEIR IS NO PREVIOUS TXN ERROR REACHED
 
 					assert(False)
@@ -756,13 +767,16 @@ class ChainController:
 				#VERIFY OWNERSHIP
 				#VERIFY PUBKEY PROVIDED = ADDRESS OF INPUT
 				assert(address == pubKeyHash) #VERIFY THAT USER SENDING COIN HAS THE PUBLIC KEY CORRESPONDING TO ADDRESS
+				print("Confirmed Address and Hash")
 				#VERIFY USER OWNS INPUTS BY CHECKING PRIVATE KEY GENERATED SIGNATURE MATCHES PUBKEYHASH THIS VERIFIES OWNERSHIP OF PUBLICKEY AND THEREFORE OWNERSHIP OF COIN BEING SENT
 				verify_msg(bytes.fromhex(input_val['sign_prev_out']),bytes.fromhex(address),pub_key_from_string(pubkeys[x]))
-
-				for txn in self.txn_pool:
-					assert(not any(input_val['prev_txid'] == d['prev_txid'] for d in txn['inputs']))
+				print("Verified Keys")
+				for pool_txn in self.txn_pool:
+					assert(not any(input_val['prev_txid'] + str(input_val['prev_txn_output']) == d['prev_txid'] + str(d['prev_txn_output']) for d in pool_txn['inputs']))
+				print("Confirmed Transaction Pool")
 				
 				assert(self.confirmUtxo(input_val))
+				print("Confirmed UTXOs")
 
 			#CHECK OUTPUTS
 			assert (len(txn['outputs']) > 0) #ENSURE AT LEAST ONE OUTPUT
@@ -809,6 +823,8 @@ class ChainController:
 		else:
 			self.txn_confirmations[txnid][1] += 1
 
+		print(self.txn_confirmations[txnid])
+
 		if self.txn_confirmations[txnid][0] > (len(self.node.clients)/2):
 			print("Adding to Mem Pool")
 			self.txn_pool.append(txn)
@@ -817,6 +833,7 @@ class ChainController:
 			self.wallet.updateWallet()
 			del self.txn_confirmations[txnid]
 			self.node.lock.release()
+
 			return
 		
 		if self.txn_confirmations[txnid][1] > (len(self.node.clients)/2):

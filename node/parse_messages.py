@@ -48,6 +48,7 @@ def parse_client_recvd(node,outgoing_client,msg):
         node.controller.recv_target_confirm(msg_object['target'])
     #BLOCK CONFIRMED
     if 'type' in msg_object and msg_object['type'] == 8:
+        print("CONFIRM RECEIVED")
         node.controller.recv_block_confirm(msg_object['hash'],msg_object['block'])
     #BLOCK ADDED
     if 'type' in msg_object and msg_object['type'] == 9:
@@ -59,6 +60,7 @@ def parse_client_recvd(node,outgoing_client,msg):
                     if txn in node.controller.txn_pool:
                         node.controller.txn_pool.remove(txn)
             node.lock.release()
+    #TXN ADDED TO POOL
     if 'type' in msg_object and msg_object['type'] == 10:
         if node.server == None or node.server.connected == False:
             if msg_object['txn'] not in node.controller.txn_pool:
@@ -143,6 +145,11 @@ def parse_server_recvd(node, incoming_client, msg):
     #TRANSACTION CONFIRMATION RECEIVED
     if 'type' in msg_object and msg_object['type'] == 10:
         node.controller.recv_txn_confirm(msg_object['txnid'],msg_object['txn'])
+    if 'type' in msg_object and msg_object['type'] == 11:
+        balance = node.wallet.getBalanceForKey(msg_object['key'])
+        message = {'type':11,'balance':balance}
+        node.server.write_client(incoming_client, json.dumps(message))
+
 
     
 

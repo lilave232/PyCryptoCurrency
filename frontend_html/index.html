@@ -1,0 +1,401 @@
+<!DOCTYPE HTML>
+
+<html>
+	<head>
+		<style>
+			html {
+				height: 100%;
+				width: 100%;
+				background-color: #4158D0;
+				background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
+			}
+
+			.title {
+				font-family: 'American Typewriter', serif;
+				font-size: 4em;
+				color:#f0f0f0;
+				margin: 0;
+			}
+
+			.subtitle {
+				font-family: Arial, sans-serif;
+				font-size: 2em;
+				color:#f0f0f0;
+				margin: 0;
+			}
+
+			p {
+				font-family: Arial, sans-serif;
+				color: #4158D0;
+			}
+
+			#keyDirectory{
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				margin-top: -250px;
+				margin-left: -250px;
+				width: 500px;
+				height: 500px;
+				text-align: center;
+			}
+
+			#balanceView{
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				margin-top: -250px;
+				margin-left: -250px;
+				width: 500px;
+				height: 500px;
+				text-align: center;
+			}
+
+			.input_box {
+				display: inline-block;
+				border-radius: 3px;
+				font-size:large;
+				border-style:solid;
+				border-width: 1px;
+				border-color: #8a8a8a;
+				background: #eaeaea;
+				color: #454545;
+				font-family: 'American Typewriter', serif;
+				-webkit-box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
+				-moz-box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
+				margin-bottom:5px;
+			}
+			
+			.submitkeys {
+				border-radius: 5px;
+				display: inline-block;
+				font-size:large;
+				border-color: #000000;
+				background: #FFFFFF;
+				color: #4158D0;
+				padding:0.35em 1.2em;
+				border:0.1em solid;
+				margin:0 0.3em 0.3em 0;
+				box-sizing: border-box;
+				text-decoration:none;
+				-webkit-box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
+				-moz-box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
+				text-align:center;
+				transition: all 0.2s;
+			}
+
+			.submitkeys:hover{
+				color:#4158D0;
+				background-color:#FFCC70;
+
+			}
+
+			.modal {
+				display: none; /* Hidden by default */
+				position: fixed; /* Stay in place */
+				z-index: 1; /* Sit on top */
+				padding-top: 100px; /* Location of the box */
+				left: 0;
+				top: 0;
+				width: 100%; /* Full width */
+				height: 100%; /* Full height */
+				overflow: auto; /* Enable scroll if needed */
+				background-color: rgb(0,0,0); /* Fallback color */
+				background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+			}
+
+			/* Modal Content */
+			.modal-content {
+				margin-top: 10px;
+				border-radius: 5px;
+				background-color: #fefefe;
+				margin: auto;
+				padding: 20px;
+				text-align: center;
+			}
+
+			.modal-border-wrap {
+				border-radius: 6px;
+				background: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
+				padding: 1px;
+				margin: auto;
+				width: 80%;
+			}
+
+
+			/* The Close Button */
+			.close {
+				color: #aaaaaa;
+				float: right;
+				font-size: 28px;
+				font-weight: bold;
+			}
+
+			.close:hover,
+			.close:focus {
+				color: #000;
+				text-decoration: none;
+				cursor: pointer;
+			}
+
+			label{
+				display: inline-block;
+				text-align: right;
+				float: left;
+				font-family: Arial, sans-serif;
+			}
+
+			input{
+				display: inline-block;
+				text-align: left;
+				float: right;
+			}
+
+		</style>
+		<script type = "text/javascript">
+			socket = null
+			function WebSocketTest() {
+				
+				if ("WebSocket" in window) {
+					console.log("WebSocket is supported by your Browser!");
+
+					if (socket != null) {
+						if (socket.readyState !== WebSocket.CLOSED && socket.readyState !== WebSocket.CLOSING) {
+							alert("Already Connected")
+							return
+						}
+					}
+
+					console.log(socket)
+					
+					socket = new WebSocket("ws://192.168.0.152:8888");
+					// Let us open a web socket
+					if (socket == null) {
+						
+					}
+
+					if (socket != null && !socket.connected) {
+						socket = new WebSocket("ws://192.168.0.152:8888");
+					}
+
+					socket.onopen = function(e) {
+						console.log("[open] Connection established");
+						console.log("Sending to server");
+						var uname = document.getElementById("uname")
+						socket.send(JSON.stringify({'type':0,'uname':uname.value}));
+
+						var keyWindow = document.getElementById("balanceView")
+						keyWindow.style.display = "block";
+						var keyWindow = document.getElementById("keyDirectory")
+						keyWindow.style.display = "none";
+					};
+
+					socket.onmessage = function(event) {
+						console.log(`[message] Data received from server: ${event.data}`);
+						var message = JSON.parse(event.data)
+						if (message.type == 0) {
+							var uncbalance = document.getElementById("uncbalance")
+							uncbalance.innerText = "Unconfirmed Balance: " + message.uncbalance.toString()
+							var usbalance = document.getElementById("usbalance")
+							usbalance.innerText = "Usable Balance: " + message.usbalance.toString()
+							var conbalance = document.getElementById("conbalance")
+							conbalance.innerText = "Confirmed Balance: " + message.conbalance.toString()
+						}
+						if (message.type == 1) {
+							var key = document.getElementById("recvAddress")
+							key.innerHTML = "Receive Transaction At:<br><br>" + message.key
+						}
+					};
+
+					socket.onclose = function(event) {
+					if (event.wasClean) {
+						console.log(event.reason)
+						console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+					} else {
+						// e.g. server process killed or network down
+						// event.code is usually 1006 in this case
+						console.log('[close] Connection died');
+					}
+					var keyWindow = document.getElementById("balanceView")
+					keyWindow.style.display = "none";
+					var keyWindow = document.getElementById("keyDirectory")
+					keyWindow.style.display = "block";
+					};
+
+					socket.onerror = function(error) {
+					alert(`[error] ${error.message}`);
+					};
+				} else {
+				  
+					// The browser doesn't support WebSocket
+					alert("WebSocket NOT supported by your Browser!");
+				}
+			}
+
+			function getAddress() {
+				socket.send(JSON.stringify({"type":1}))
+			}
+
+			function sendTxn() {
+				var address = document.getElementById("toaddress").value
+				var amount = document.getElementById("amount").value
+				var fee = document.getElementById("fee").value
+				if (socket != null) {
+					socket.send(JSON.stringify({"type":2,"address":address,"amount":parseFloat(amount),"fee":parseFloat(fee)}))
+					console.log("Sent")
+				}
+			}
+
+			window.onload = function () {
+
+				if (socket === null) {
+					var keyWindow = document.getElementById("balanceView")
+					keyWindow.style.display = "none";
+					var keyWindow = document.getElementById("keyDirectory")
+					keyWindow.style.display = "block";
+				} else if (socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING) {
+					var keyWindow = document.getElementById("keyDirectory")
+					keyWindow.style.display = "block";
+				}
+
+				var sendmodal = document.getElementById("SendTxnModal");
+
+				// Get the button that opens the modal
+				var btn = document.getElementById("sendtxn")
+
+				// Get the <span> element that closes the modal
+				var span = document.getElementsByClassName("close")[0];
+
+				// When the user clicks the button, open the modal 
+				btn.onclick = function() {
+					sendmodal.style.display = "block";
+				}
+
+				// When the user clicks on <span> (x), close the modal
+				span.onclick = function() {
+					sendmodal.style.display = "none";
+				}
+
+				// When the user clicks anywhere outside of the modal, close it
+				window.onclick = function(event) {
+					if (event.target == sendmodal) {
+						sendmodal.style.display = "none";
+					}
+				}
+
+				var recvmodal = document.getElementById("RecvTxnModal");
+
+				// Get the button that opens the modal
+				var btn = document.getElementById("recvtxn")
+
+				// Get the <span> element that closes the modal
+				var span = document.getElementsByClassName("close")[1];
+
+				// When the user clicks the button, open the modal 
+				btn.onclick = function() {
+					getAddress()
+					recvmodal.style.display = "block";
+				}
+
+				// When the user clicks on <span> (x), close the modal
+				span.onclick = function() {
+					recvmodal.style.display = "none";
+				}
+
+				// When the user clicks anywhere outside of the modal, close it
+				window.onclick = function(event) {
+					if (event.target == recvmodal) {
+						recvmodal.style.display = "none";
+					}
+				}
+			}
+
+			
+		</script>
+		
+	</head>
+	
+	<body>
+		<div id="keyDirectory">
+			<h1 class="title">Buttcoin</h1>
+			<input id="uname" class="input_box" type="text" placeholder="Username" style="width:auto;flex:1;float:none;"><br><br>
+			<button class="submitkeys" onclick="WebSocketTest()">Submit</button>
+		</div>
+
+		<div id="balanceView" style="display: none;">
+			<h1 class="title">Buttcoin</h1>
+			<h1 id="uncbalance" class="subtitle">Unconfirmed Balance: 0</h1>
+			<h1 id="usbalance"  class="subtitle">Usable Balance: 0</h1>
+			<h1 id="conbalance" class="subtitle">Confirmed Balance: 0</h1><br>
+			<button id="sendtxn" class="submitkeys">Send<br>Transaction</button>
+			<button id="recvtxn" class="submitkeys">Receive<br>Transaction</button>
+		</div>
+
+		<!-- The Modal -->
+		<div id="SendTxnModal" class="modal">
+
+			<!-- Modal content -->
+			<div class="modal-border-wrap">
+				<div class="modal-content">
+					<span class="close">&times;</span><br>
+					<h1 class="subtitle" style="color:#4158D0;">Send Transaction</h1>
+					<div style="margin-left:auto;margin-right: auto;width: 75%;display: flex;">
+						<label for="To Address:" style="color:#4158D0;padding-right: 10px;">Address:</label>
+						<input class="input_box" type="text" id="toaddress" style="width:auto;flex:1">
+					</div>
+					<div style="margin-left:auto;margin-right: auto;width: 75%;display: flex;">
+						<label for="Amount:" style="color:#4158D0;padding-right: 10px;">Amount:</label>
+						<input class="input_box" type="number" id="amount" style="width:auto;flex:1">
+					</div>
+					<div style="margin-left:auto;margin-right: auto;width: 75%;display: flex;">
+						<label for="Fee:" style="color:#4158D0;padding-right: 10px;">Fee: </label>
+						<input class="input_box" ype="number" id="fee" style="width:auto;flex:1">
+					</div>
+					<button class="submitkeys" onclick="sendTxn()">Send!</button>
+				</div>
+			</div>
+		
+		</div>
+
+		<div id="RecvTxnModal" class="modal">
+
+			<!-- Modal content -->
+			<div class="modal-border-wrap">
+				<div class="modal-content">
+					<span class="close">&times;</span><br>
+					<h1 class="subtitle" style="color:#4158D0;">Receive Transaction</h1>
+					<p id="recvAddress">Receive Transaction At:</p>
+				</div>
+			</div>
+		
+		</div>
+		
+		<!--
+		<form>
+			<input id="uname">
+		</form>
+		<div id = "sse">
+			<a href = "javascript:WebSocketTest()">Run WebSocket</a>
+		</div>
+		<div>
+			<h1 id="uncbalance">Unconfirmed Balance: 0</h1>
+			<h1 id="usbalance">Usable Balance: 0</h1>
+			<h1 id="conbalance">Confirmed Balance: 0</h1>
+		</div>
+		<div>
+			<h2>Received Txn</h2>
+			<a href = "javascript:getAddress()">Get Address</a>
+			<p id="recvAddress">Address:</p>
+		</div>
+
+		<h2>Send Txn</h2>
+		<label for="To Address:">Address:</label><br>
+		<input type="text" id="toaddress"><br>
+		<label for="Amount:">Amount:</label><br>
+		<input type="number" id="amount"><br>
+		<label for="Fee:">Fee:</label><br>
+		<input type="number" id="fee"><br><br>
+		<button id="sendtxn" onclick="sendTxn()">Send!</button>
+		-->
+	</body>
+</html>

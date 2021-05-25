@@ -159,6 +159,12 @@ class Client:
 			print("Unable to Connect")
 			return
 
+	def close(self):
+		if self.connected:
+			self.client.close()
+			self.connected = False
+			self.node.remove_client(self)
+
 
 	def write(self,msg):
 		if self.connected:
@@ -184,62 +190,70 @@ class Client:
 			return False
 
 	def read(self):
-		# try:
-		while self.connected:
-			received = bytes("",'utf-8')
-			data = self.client.recv(1024)
-			if len(data) == 0:
-				print("DATA FAILURE 1")
-				print("SERVER DISCONNECTED")
-				self.client.close()
-				self.connected = False
-				self.node.remove_client(self)
-				sys.exit()
-			while data:
-				received += data
-				if received[-5:] == bytes("<EOM>",'utf-8'):
-					break
+		try:
+			while self.connected:
+				received = bytes("",'utf-8')
 				data = self.client.recv(1024)
 				if len(data) == 0:
-					print("DATA FAILURE 2")
+					print("DATA FAILURE 1")
 					print("SERVER DISCONNECTED")
 					self.client.close()
 					self.connected = False
 					self.node.remove_client(self)
 					sys.exit()
-			for msg in received.decode('utf-8').split("<EOM>"):
-				self.node.parse_client_message(self,msg)
-		# except:
-		# 	print("OVERALL FAILURE")
-		# 	print("SERVER DISCONNECTED")
-		# 	self.client.close()
-		# 	self.connected = False
-		# 	self.node.remove_client(self)
-		# 	sys.exit()
+				while data:
+					received += data
+					if received[-5:] == bytes("<EOM>",'utf-8'):
+						break
+					data = self.client.recv(1024)
+					if len(data) == 0:
+						print("DATA FAILURE 2")
+						print("SERVER DISCONNECTED")
+						self.client.close()
+						self.connected = False
+						self.node.remove_client(self)
+						sys.exit()
+				for msg in received.decode('utf-8').split("<EOM>"):
+					self.node.parse_client_message(self,msg)
+		except:
+			print("OVERALL FAILURE")
+			print("SERVER DISCONNECTED")
+			self.client.close()
+			self.connected = False
+			self.node.remove_client(self)
+			sys.exit()
 
-class P2PNetNode:
-	initial_connect_address = "localhost"
-	inital_connect_port = 4444
-	chain_directory = "chain"
-	server_thread = None
-	client_thread = None
-	server = None
-	clients = []
-	pause = False
-	lock = None
-	controller = None
-	wallet = None
+class P2PNetNode(object):
 	###
 	# Initialize Node
 	###
-	def __init__(self,init_connect_addr="localhost",init_connect_port=4444,chain_directory="blockchain"):
+	def __init__(self,init_connect_addr="localhost",init_connect_port=4444,chain_directory="blockchain",key_dir="keys",client_parser=None,server_parser=None):
+		self.initial_connect_address = "localhost"
+		self.inital_connect_port = 4444
+		self.chain_directory = "chain"
+		self.server_thread = None
+		self.client_thread = None
+		self.server = None
+		self.clients = []
+		self.pause = False
+		self.lock = None
+		self.controller = None
+		self.wallet = None
+		self.parse_server_message = None
+		self.parse_client_message = None
 		#SETUP CONNECTION VARIABLES
 		self.controller = ChainController(self,chain_directory)
-		self.wallet = Wallet(self,self.controller)
+		self.wallet = Wallet(self,self.controller,key_dir)
 		self.controller.set_wallet(self.wallet)
 		self.inital_connect_address = init_connect_addr
 		self.inital_connect_port = init_connect_port
 		self.chain_directory = chain_directory
+		self.parse_server_message = server_parser
+		if server_parser == None:
+			self.parse_server_message = self.parse_server
+		self.parse_client_message = client_parser
+		if client_parser == None:
+			self.parse_client_message = self.parse_client
 		self.lock = threading.Lock()
 
 	def setconfig(self,file):
@@ -269,6 +283,7 @@ class P2PNetNode:
 	def start_client(self,address="localhost",port=4444):
 		self.lock.acquire()
 		print("Attempting to Connect To: ", address, port)
+		print(self.clients)
 		if (self.server != None and address == self.server.address and port == self.server.port) or ((address,port) in [(client.address, client.port) for client in self.clients]):
 			self.pause = False
 			print("CLIENT NOT STARTED")
@@ -295,10 +310,10 @@ class P2PNetNode:
 			if ret == False:
 				self.clients.remove(client)
 	## PARSE MESSAGE RECEIVED BY SERVER
-	def parse_server_message(self,client,msg):
+	def parse_server(self,client,msg):
 		parse_server_recvd(self,client,msg)
 	## PARSE MESSAGE RECEIVED BY CLIENT
-	def parse_client_message(self,client,msg):
+	def parse_client(self,client,msg):
 		parse_client_recvd(self,client,msg)
 		
 	def list_connections(self):
