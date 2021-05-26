@@ -18,10 +18,12 @@ class Wallet(object):
 		self.setkeydir(key_dir)
 
 	def setkeydir(self,directory):
-		self.directory = directory
-		if os.path.isdir(os.path.join(os.getcwd(),directory)) == False:
+		if os.path.isdir(os.path.join(os.getcwd(),'KeyStores')) == False:
+			os.mkdir(os.path.join(os.getcwd(),'KeyStores'))
+		self.directory = 'KeyStores' + "/" + directory
+		if os.path.isdir(os.path.join(os.getcwd(),self.directory)) == False:
 			path = os.getcwd()
-			os.mkdir(os.path.join(path,directory))
+			os.mkdir(os.path.join(path,self.directory))
 		self.indexKeys()
 		self.indexUTXOS()
 
