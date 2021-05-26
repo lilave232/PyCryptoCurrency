@@ -441,7 +441,7 @@ class ChainController(object):
 		self.node.client_broadcast(json.dumps(message))
 
 	def confirm_target(self):
-		print(self.block_target)
+		self.node.lock.acquire()
 		if self.block_target == None:
 			return
 		
@@ -452,11 +452,10 @@ class ChainController(object):
 		while self.target_confirmed == False:
 			continue
 		print("Target Confirmed")
+		self.node.lock.release()
 
 	def recv_target_confirm(self,target):
-		self.node.lock.acquire()
 		if self.target_confirmed == True or self.block_target == None:
-			self.node.lock.release()
 			return
 		
 		if self.block_target not in self.target_confirmations:
@@ -479,7 +478,6 @@ class ChainController(object):
 			self.target_confirmations = {}
 			print("Target Not Confirmed! Stopping Mine")
 			#self.get_target()
-		self.node.lock.release()
 		return
 
 	##############################################################

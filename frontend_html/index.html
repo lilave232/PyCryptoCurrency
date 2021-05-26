@@ -195,10 +195,14 @@
 						var message = JSON.parse(event.data)
 						if (message.type == 0) {
 							var uncbalance = document.getElementById("uncbalance")
-							uncbalance.innerText = "Unconfirmed Balance: " + message.uncbalance.toString()
+							var conbalance = document.getElementById("conbalance")
+							if (message.uncbalance === message.conbalance) {
+								uncbalance.innerText = "Unconfirmed Balance: N/A"
+							} else {
+								uncbalance.innerText = "Unconfirmed Balance: " + message.uncbalance.toString()
+							}	
 							var usbalance = document.getElementById("usbalance")
 							usbalance.innerText = "Usable Balance: " + message.usbalance.toString()
-							var conbalance = document.getElementById("conbalance")
 							conbalance.innerText = "Confirmed Balance: " + message.conbalance.toString()
 						}
 						if (message.type == 1) {

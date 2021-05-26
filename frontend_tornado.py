@@ -4,11 +4,14 @@ import tornado.ioloop
 import tornado.web
 import socket
 import asyncio
+import threading
 from node.NodeMain import P2PNetNode
 from node.parse_messages import *
 import json
 import os
 import time
+import http.server
+import socketserver
 
 
 class FrontEnd(object):
@@ -126,9 +129,27 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 application = tornado.web.Application([
 	(r'/', WSHandler),
 ])
+
+class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/':
+            self.path = 'frontend_html/index.html'
+        return http.server.SimpleHTTPRequestHandler.do_GET(self)
+
+def serve_webpage():
+	handler_object = MyHttpRequestHandler
+
+	PORT = 8000
+	my_server = socketserver.TCPServer(("0.0.0.0", PORT), handler_object)
+
+	# Star the server
+	my_server.serve_forever()
+	print("Server Running")
  
  
 if __name__ == "__main__":
+	threading.Thread(target=serve_webpage).start()
+
 
 	server_address = input("Connect Address:")
 	server_port = int(input("Connect Port:"))
