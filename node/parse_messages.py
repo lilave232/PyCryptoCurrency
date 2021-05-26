@@ -120,6 +120,9 @@ def parse_server_recvd(node, incoming_client, msg):
         if blk and fname:
             message = {'type':4,'fname':fname,'block':blk,'hash':msg_object['hash']}
             node.server.write_client(incoming_client,json.dumps(message))
+        else:
+            message = {'type':4,'fname':False,'block':False,'hash':False}
+            node.server.write_client(incoming_client,json.dumps(message))
     #REQUEST FOR TARGET
     if 'type' in msg_object and msg_object['type'] == 5:
         if node.controller.block_target != None:

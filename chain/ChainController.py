@@ -500,6 +500,7 @@ class ChainController(object):
 		self.download_hash_verifications[hash] += 1
 
 		if max(self.download_hash_verifications.values()) > (len(self.node.clients)/2) and hash != False:
+			self.node.lock.release()
 			print("Hash Confirmed Request Download")
 			hash = max(self.download_hash_verifications, key=self.download_hash_verifications.get)
 			self.request_download(hash)
@@ -527,6 +528,7 @@ class ChainController(object):
 				else:
 					if hash in self.hash_verifications:
 						self.hash_verifications[hash] = [0,0]
+					self.node.lock.release()
 					message = {"type":2,"block":block_num,"hash":hash}
 					self.node.client_broadcast(json.dumps(message))
 		self.node.lock.release()
