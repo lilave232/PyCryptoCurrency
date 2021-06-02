@@ -17,7 +17,9 @@ import socketserver
 class FrontEnd(object):
 
 	def __init__(self,websocket,loop,wallet,connect_address='localhost',connect_port=4444):
+		global chain
 		self.node = P2PNetNode(client_parser=self.parse_p2p_message,key_dir=wallet)
+		self.node.controller.set_directory(chain)
 		self.client = self.node.start_client(connect_address,connect_port)
 		self.websocket = websocket
 		self.loop = loop
@@ -89,8 +91,9 @@ class FrontEnd(object):
 
 class WSHandler(tornado.websocket.WebSocketHandler):
 
-	global server_address
-	global server_port
+	def initialize(self, server_address, server_port):
+		self.server_address = server_address
+		self.server_port = server_port
 
 	def parse_front_end_message(self,msg):
 		msg_object = convert_to_obj(msg)
@@ -99,7 +102,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 			return
 		if 'type' in msg_object and msg_object['type'] == 0:
 			print(tornado.ioloop.IOLoop.current())
-			self.frontend = FrontEnd(self,tornado.ioloop.IOLoop.current(),msg_object['uname'],server_address,server_port)
+			self.frontend = FrontEnd(self,tornado.ioloop.IOLoop.current(),msg_object['uname'],self.server_address,self.server_port)
 		if 'type' in msg_object and msg_object['type'] == 1:
 			msg = {"type":1,"key":self.frontend.getKey()}
 			self.write_message(json.dumps(msg))
@@ -125,10 +128,6 @@ class WSHandler(tornado.websocket.WebSocketHandler):
  
 	def check_origin(self, origin):
 		return True
- 
-application = tornado.web.Application([
-	(r'/', WSHandler),
-])
 
 class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -136,26 +135,45 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.path = 'frontend_html/index.html'
         return http.server.SimpleHTTPRequestHandler.do_GET(self)
 
-def serve_webpage():
+def serve_webpage(frontend_port):
 	handler_object = MyHttpRequestHandler
 
-	PORT = 8000
+	PORT = frontend_port
 	my_server = socketserver.TCPServer(("0.0.0.0", PORT), handler_object)
 
 	# Star the server
 	my_server.serve_forever()
 	print("Server Running")
- 
- 
-if __name__ == "__main__":
-	threading.Thread(target=serve_webpage).start()
+
+def start_websocket(backend_address,backend_port):
+	asyncio.set_event_loop(asyncio.new_event_loop())
 
 
-	server_address = input("Connect Address:")
-	server_port = int(input("Connect Port:"))
+	application = tornado.web.Application([(r'/', WSHandler,{'server_address': backend_address,'server_port':backend_port}),])
 
 	http_server = tornado.httpserver.HTTPServer(application)
 	http_server.listen(8888)
 	myIP = socket.gethostbyname(socket.gethostname())
-	print('*** Websocket Server Started at %s***' % myIP)
+	print(('*** Websocket Server Started at %s:{0}***' % myIP).format(8888))
 	tornado.ioloop.IOLoop.instance().start()
+
+def start_frontend(backend_address, backend_port, frontend_port):
+	threading.Thread(target=serve_webpage,args=(frontend_port,)).start()
+	server_address = backend_address
+	server_port = backend_port
+	threading.Thread(target=start_websocket,args=(backend_address,backend_port)).start()
+ 
+ 
+if __name__ == "__main__":
+	threading.Thread(target=serve_webpage,args=(8000,)).start()
+	server_address = input("Connect Address:")
+	server_port = int(input("Connect Port:"))
+	chain = input("Chain:")
+	application = tornado.web.Application([(r'/', WSHandler,{'server_address': server_address,'server_port':server_port}),])
+
+	http_server = tornado.httpserver.HTTPServer(application)
+	http_server.listen(8888)
+	myIP = socket.gethostbyname(socket.gethostname())
+	print(('*** Websocket Server Started at %s:{0}***' % myIP).format(8000))
+	tornado.ioloop.IOLoop.instance().start()
+	#start_frontend()

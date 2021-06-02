@@ -78,6 +78,9 @@ class Wallet(object):
 		self.utxos = {}
 		for fname in block_files:
 			block = json.load(open(fname, "rb" ))
+			if block == False:
+				os.remove(fname)
+				continue
 			self.getUtxosFromBlock(block)
 
 		for txn in self.controller.txn_pool:
@@ -116,7 +119,7 @@ class Wallet(object):
 					del self.utxos[in_val['prev_txid'] + str(in_val['prev_txn_output'])]
 
 
-	def sendTransaction(self, value, out_address, fees):
+	def sendTransaction(self, value, out_address, fees, forward=False):
 
 		balance = self.getBalance()
 
@@ -148,7 +151,7 @@ class Wallet(object):
 
 		txn = self.controller.gen_txn(out_address,utxos_to_use,value,fees)
 
-		self.controller.send_txn(txn,pubKeys)
+		self.controller.send_txn(txn,pubKeys,forward)
 
 
 	def getBalance(self,type=0):

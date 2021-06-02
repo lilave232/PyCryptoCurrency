@@ -1,4 +1,6 @@
+#from Users.averypozzobon.Documents.ACTUALPYCRYPTO.v2.frontend_tornado import start_frontend
 from node.NodeMain import * 
+from FrontEndTornado import *
 import sys, signal
 import threading
 import time
@@ -113,6 +115,11 @@ def process_commands(command_entry):
 			fees = minimum_fees
 
 		node.wallet.sendTransaction(amount, [{"address":address,"value":amount}],fees) #SEND THE TRANSACTION
+	
+	elif command == "frontend":
+		print("Starting Web Server")
+		start_frontend(node.server.address,node.server.port,8000)
+		#threading.Thread(target=start_frontend,args=(node.server.address,node.server.port,8000)).start()
 		
 		#except:
 		#	print("Unable to Send")

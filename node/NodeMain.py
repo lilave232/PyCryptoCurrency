@@ -105,7 +105,6 @@ class Server:
 				self.clients.remove(client)
 
 	def write_client(self,client,msg):
-		conn = client.client
 		data = bytes(msg + "<EOM>",'utf-8')
 		data_size = len(data)
 		total_sent = 0
@@ -123,7 +122,6 @@ class Server:
 			except:
 				self.clients.remove(client)
 				return False
-
 		assert total_sent == data_size
 
 		return True
@@ -214,6 +212,7 @@ class Client:
 						self.node.remove_client(self)
 						sys.exit()
 				for msg in received.decode('utf-8').split("<EOM>"):
+					#print(msg)
 					self.node.parse_client_message(self,msg)
 		except:
 			print("OVERALL FAILURE")
@@ -309,6 +308,8 @@ class P2PNetNode(object):
 			ret = client.write(msg)
 			if ret == False:
 				self.clients.remove(client)
+		#if json.loads(msg)["type"] == 2:
+		#	print("Sent Type 2: {0}".format(time.time()))
 	## PARSE MESSAGE RECEIVED BY SERVER
 	def parse_server(self,client,msg):
 		parse_server_recvd(self,client,msg)
