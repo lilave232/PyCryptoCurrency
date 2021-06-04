@@ -41,7 +41,7 @@ class Server:
 		try:
 			self.server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 			self.server.bind(("0.0.0.0", self.port))
-			self.server.listen(100)
+			self.server.listen()
 			self.connected = True
 			self.server_thread = threading.Thread(target=self.run)
 			if self.server_thread.is_alive() == False:

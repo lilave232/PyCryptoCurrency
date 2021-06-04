@@ -503,21 +503,29 @@ class ChainController(object):
 			diff = block_1['time'] - block_2['time']
 			if block_1['time'] - block_2['time'] > 600:
 				adjustment = int(int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') / 0x10)
-				if (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big')) < (0xFFFFFFFFFFFF - (adjustment * ((diff/600)-1))):
+				print((int.from_bytes(bytes.fromhex(self.block_target),byteorder='big')) + int((adjustment * (diff/600))) < 0xFFFFFFFFFFFF)
+				print((int.from_bytes(bytes.fromhex(self.block_target),byteorder='big')) + int((adjustment * (diff/600))))
+				if (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big')) + int((adjustment * (diff/600))) < (0xFFFFFFFFFFFF):
 					print("Increasing Target")
 					self.block_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') + int((adjustment * (diff/600)))).to_bytes(6, byteorder='big').hex()
 					print(self.block_target)
+					return
 				else:
+					self.block_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') + int((adjustment))).to_bytes(6, byteorder='big').hex()
 					print(self.block_target)
 					return
 			else:
 				adjustment = int(int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') / 0x10)
-
+				#print(adjustment * (600/max(diff,1)))
+				print(int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') > adjustment * (600/max(diff,1)))
+				print((int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') - int((adjustment * ((600/max(diff,1))-1)))))
 				if (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') > adjustment * (600/max(diff,1))):
 					print("Decreasing Target")
 					self.block_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') - int((adjustment * ((600/max(diff,1))-1)))).to_bytes(6, byteorder='big').hex()
 					print(self.block_target)
+					return
 				else:
+					self.block_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') - int((adjustment))).to_bytes(6, byteorder='big').hex()
 					print(self.block_target)
 					return
 		else:
@@ -1084,6 +1092,8 @@ class ChainController(object):
 	
 	def hash_block_dict(self,block): #HASH BLOCK
 		block_2_hash = block.copy()
+		if 'txn_hash' in block_2_hash:
+			return hash_block(json.dumps(block).encode())
 		if 'txns' in block_2_hash:
 			block_2_hash.pop('txns')
 		return hash_block(json.dumps(block).encode()) #TAKE BLOCK DICT AND CONVERT TO HASH VALUE
