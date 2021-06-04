@@ -155,6 +155,24 @@ Enter Command:
 
 There must be at least one connected peer with the chain downloaded or many functions will be unavailable.
 
+## setchain
+
+The setchain command sets the directory where the chain files will exist the default is in blockchain directory.
+
+```bash
+Enter Command: setchain directory
+Enter Command:
+```
+
+## setwallet
+
+The setwallet command sets the directory where your keys will be stored this directory will contain all private keys that connect to your coins. Without these keys you will not have access to your coins. The default directory is KeyStores/keys
+
+```bash
+Enter Command: setwallet keys
+Enter Command:
+```
+
 ## mine
 If you started a node from scratch you will have no blocks on the chain. There will be no currency available to send or receive. 
 So you will need to mine blocks to the chain. As long as at least two PyCurrency instances are connected you can mine the network.
