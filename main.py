@@ -15,15 +15,37 @@ def process_commands(command_entry):
 	
 	if command == "help":
 		print("Available Commands:")
-		print("connect: Connects to P2PNet")
-		print("loadconfig <filename>: Loads connect configuration file")
-		print("listpeers: List connected peers on network")
-		print("readpool: Shows pool of unconfirmed transactions")
-		print("clear: Clears window")
-		print("mine: Attempts to mine block onto chain")
-		print("sendtxn <address_to_send_to amount fee>: Sends transaction to an address for the specified amount and fees. Fees must be greater than minimum")
-		print("recvtxn: Generates address to receive transactions from, double click address to copy")
-		print("getbalance: Gets the wallet balance")
+		print("----")
+		print("start server <address=localhost> <port=4444>:\nStarts Server with Parameters address and port (Default: localhost and 4444).")
+		print("----")
+		print("start client <address=localhost> <port=4444>:\nStarts Client to connect at given parameters (Default: localhost and 4444).")
+		print("----")
+		print("setchain:\nSets the directory to store the chain files.")
+		print("----")
+		print("setwallet:\nSets the directory of the wallet")
+		print("----")
+		print("download:\nOnce client is connected will download/verify the blocks on the chain (Must be run before mining).")
+		print("----")
+		print("listpeers:\nList connected peers on network.")
+		print("----")
+		print("mempool:\nShows pool of unconfirmed transactions.")
+		print("----")
+		print("startlog:\nShows log of mining stats.")
+		print("----")
+		print("stoplog:\nHides log of mining stats.")
+		print("----")
+		print("mine:\nAttempts to mine block onto chain.")
+		print("----")
+		print("loopmine:\nAttempts to mine block on a loop so once block is mined node starts again.")
+		print("----")
+		print("stopmine:\nAttmpts to stop mining block will stop mining once next block is mined.")
+		print("----")
+		print("sendtxn <address_to_send_to> <amount> <fee=min_fee>:\nSends transaction to an address for the specified amount and fees. Fees must be greater than minimum (Default: minimum fee)")
+		print("----")
+		print("recvtxn:\nGenerates address to receive transactions from, double click address to copy")
+		print("----")
+		print("getbalance:\nGets the wallet balance")
+		print("----")
 	
 	elif command == "start":
 		if command_values[1] == "server":
@@ -72,8 +94,14 @@ def process_commands(command_entry):
 			print(node.wallet.getBalance())
 
 	elif command == "mine":
-
+		node.controller.loop = False
 		threading.Thread(target=node.controller.start_mining).start()
+	
+	elif command == "startlog":
+		node.controller.log = True
+	
+	elif command == "stoplog":
+		node.controller.log = False
 	
 	elif command == "loopmine":
 		node.controller.loop = True

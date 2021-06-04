@@ -50,6 +50,7 @@ class ChainController(object):
 		self.confirmed_txns = []
 		self.txn_confirmations = {}
 		self.loop = False
+		self.log = False
 		##
 		self.node = node
 		self.set_directory(directory)
@@ -148,16 +149,19 @@ class ChainController(object):
 		if self.node.server == None or self.node.server.connected == False:
 			print("Cannot Mine Must Connect to Server")
 			self.node.lock.release()
+			self.loop = False
 			return
 
 		if len(self.confirmation_nodes) < 1:
 			print("Unable to mine not enough connections")
 			self.node.lock.release()
+			self.loop = False
 			return
 
 		#threading.Thread(target=self.download_chain).start()
 		if self.chain_downloaded == False:
 			self.node.lock.release()
+			self.loop = False
 			return
 		#while self.chain_downloaded == False:
 		#	continue
@@ -328,8 +332,9 @@ class ChainController(object):
 				attempts += 1
 				time_val = time.time()
 
-				print("Mining APS: {0}, Target: {1}, Seconds: {2}".format("{:.5f}".format(attempts/(time_val-start_time)),self.block_target,"{:.5f}".format(time_val-start_time)),end="")
-				print("\r",end="")
+				if self.log:
+					print("Mining APS: {0}, Target: {1}, Seconds: {2}".format("{:.5f}".format(attempts/(time_val-start_time)),self.block_target,"{:.5f}".format(time_val-start_time)),end="")
+					print("\r",end="")
 
 			block['txns'] = []
 			coinbase_txn = self.gen_coinbase_txn(hash)
