@@ -77,6 +77,7 @@ class ChainController(object):
 		if os.path.isdir(self.index_directory) == False:
 			path = os.getcwd()
 			os.mkdir(os.path.join(path,self.index_directory))
+
 		self.index_chain()
 
 	#################################################################
@@ -522,9 +523,9 @@ class ChainController(object):
 			else:
 				adjustment = int(int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') / 0x10)
 				#print(adjustment * (600/max(diff,1)))
-				print(int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') > adjustment * (600/max(diff,1)))
-				print((int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') - int((adjustment * ((600/max(diff,1))-1)))))
-				if (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') > adjustment * (600/max(diff,1))):
+				print(int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') > adjustment * (600/max(diff,1)) + 0x1111111)
+				print((int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') - int((adjustment * ((600/max(diff,1))-1) + 0x1111111))))
+				if (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') > (adjustment * (600/max(diff,1))) + 0x1111111):
 					print("Decreasing Target")
 					self.block_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') - int((adjustment * ((600/max(diff,1))-1)))).to_bytes(6, byteorder='big').hex()
 					print(self.block_target)
@@ -534,7 +535,7 @@ class ChainController(object):
 					print(self.block_target)
 					return
 		else:
-			self.block_target = (1000).to_bytes(4, byteorder='big').hex()
+			return
 
 
 
@@ -735,6 +736,14 @@ class ChainController(object):
 			size = sizes[confirmations.index(max(confirmations))]
 			self.confirmed_size = size
 			print("Confirmed Size:", size)
+			if size == 0:
+				self.chain_verified = True
+				self.chain_downloaded = True
+				print("Chain Has No Blocks. Chain Downloaded")
+				self.node.lock.release()
+				message = {"type":12}
+				self.node.client_broadcast(json.dumps(message))
+				return
 			self.remove_extra_blocks()
 			if size == self.get_chain_size():
 				print("No Download Necessary")
