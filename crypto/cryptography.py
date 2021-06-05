@@ -4,7 +4,7 @@ from ecdsa import SigningKey, VerifyingKey, SECP256k1
 import os
 curve = registry.get_curve('brainpoolP256r1')
 import uuid
-
+import logging
 
 def hash_block(block):
     sha3_key = hashlib.sha3_256()

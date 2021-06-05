@@ -3,6 +3,8 @@ import os
 from crypto.cryptography import *
 import pickle
 import json
+import logging
+
 class Wallet(object):
 
 	def __init__(self,node,controller, key_dir="keys"):

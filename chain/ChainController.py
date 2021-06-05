@@ -5,6 +5,7 @@ import time
 import random
 import threading
 import uuid
+import logging
 
 from ecdsa.ecdsa import Private_key, Signature
 from crypto.cryptography import *
