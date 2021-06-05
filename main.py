@@ -4,6 +4,7 @@ from FrontEndTornado import *
 import sys, signal
 import threading
 import time
+import logging
 
 node = P2PNetNode()
 
@@ -82,7 +83,7 @@ def process_commands(command_entry):
 		try:
 			node.controller.set_directory(command_values[1])
 		except:
-			print("Unable to Update Directory")
+			logging.info("Unable to Update Directory")
 	
 	elif command == "readblk":
 		print(node.controller.view_block_file(command_values[1]))
@@ -119,7 +120,7 @@ def process_commands(command_entry):
 
 		if node == None:
 
-			print("Must Connect First")
+			logging.info("Must Connect First")
 
 			return
 
@@ -145,7 +146,7 @@ def process_commands(command_entry):
 		node.wallet.sendTransaction(amount, [{"address":address,"value":amount}],fees) #SEND THE TRANSACTION
 	
 	elif command == "frontend":
-		print("Starting Web Server")
+		logging.info("Starting Web Server")
 		start_frontend(node.server.address,node.server.port,8000)
 		#threading.Thread(target=start_frontend,args=(node.server.address,node.server.port,8000)).start()
 		
@@ -155,12 +156,15 @@ def process_commands(command_entry):
 
 def signal_handler(signal, frame):
 		global node
-		print("\nprogram exiting gracefully")
+		logging.info("\nprogram exiting gracefully")
 		node.stop_server()
 		sys.exit(0)    
 
 if __name__ == "__main__":
-
+	logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p:',level=logging.INFO, handlers=[
+        logging.FileHandler("info.log",mode="w"),
+        logging.StreamHandler(sys.stdout)
+    ])
 	signal.signal(signal.SIGINT, signal_handler)
 	command = input("Enter Command: ")
 	while True:

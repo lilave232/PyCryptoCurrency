@@ -65,7 +65,7 @@ class Wallet(object):
 
 					self.keys[hash.hex()] = privKey
 		else:
-			print("Could not load keys") #NO DIRECTORY MEANS NO KEYS
+			logging.info("Could not load keys") #NO DIRECTORY MEANS NO KEYS
 			return
 
 		pickle.dump(self.keys,open(os.path.join(self.controller.index_directory,'keys.pkl'), 'wb'))
@@ -129,7 +129,7 @@ class Wallet(object):
 
 		if balance < (value+fees):
 
-			print("Cannot Send Transaction Insufficient Funds") #TELL USER THE TRANSACTION WILL FAIL
+			logging.info("Cannot Send Transaction Insufficient Funds") #TELL USER THE TRANSACTION WILL FAIL
 
 			return False
 
@@ -157,7 +157,7 @@ class Wallet(object):
 	def getBalance(self,type=0):
 
 		if type == 0:
-			print("CONFIRMED BALANCE:",sum([x['Value'] for x in self.utxos.values()]))
+			logging.info("CONFIRMED BALANCE:",sum([x['Value'] for x in self.utxos.values()]))
 			return float("{:.8f}".format(sum([x['Value'] for x in self.utxos.values()])))
 
 		if type == 1:

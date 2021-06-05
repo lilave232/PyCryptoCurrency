@@ -148,13 +148,13 @@ class ChainController(object):
 	def start_mining(self):
 		self.node.lock.acquire()
 		if self.node.server == None or self.node.server.connected == False:
-			print("Cannot Mine Must Connect to Server")
+			logging.info("Cannot Mine Must Connect to Server")
 			self.node.lock.release()
 			self.loop = False
 			return
 
 		if len(self.confirmation_nodes) < 1:
-			print("Unable to mine not enough connections")
+			logging.info("Unable to mine not enough connections")
 			self.node.lock.release()
 			self.loop = False
 			return
@@ -172,7 +172,7 @@ class ChainController(object):
 			self.node.lock.release()
 			t = time.localtime()
 			current_time = time.strftime("%H:%M:%S", t)
-			print("Started Mining:",current_time)
+			logging.info("Started Mining:",current_time)
 			self.block_confirmations = {}
 			self.block_mined = False
 			self.target_receipts = {}
@@ -185,7 +185,7 @@ class ChainController(object):
 
 			block, block_hash, block_sig, priv_key = self.gen_block()
 			if block == False:
-				print("Unable to Mine")
+				logging.info("Unable to Mine")
 				self.mining = False
 				return
 			message = {'type':8,'block':block,'pubkey':priv_key.verifying_key.to_string().hex(),'signature':block_sig}
@@ -239,14 +239,14 @@ class ChainController(object):
 				self.confirmed_txns.append(txn)
 
 		#if block_in_value - block_out_value > 0:
-		#	print("Inputs:", block_in_value, "Outputs:", block_out_value)
+		#	logging.info("Inputs:", block_in_value, "Outputs:", block_out_value)
 
 		return float("{:.8f}".format(fees))
 
 
 	def gen_block(self):
 		#try:
-			print("Building Block")
+			logging.info("Building Block")
 			hash, priv_key = self.wallet.addKeyPriv()
 			prev_block_hash = bytearray(32).hex()
 			if (len(self.hashes) > 0):
@@ -273,7 +273,7 @@ class ChainController(object):
 
 			block_hash = self.hash_block_dict(block)
 
-			print("Mining")
+			logging.info("Mining")
 			attempts = 0
 
 			start_time = time.time()
@@ -344,7 +344,7 @@ class ChainController(object):
 			block['txns'][0]['outputs'][0]['value'] += add_reward
 			block['txns'].extend(txns)
 			
-			print("Block Obtained")
+			logging.info("Block Obtained")
 
 			#print("Reward Generated:",block['txns'][0]['outputs'][0]['value'])
 
@@ -359,33 +359,33 @@ class ChainController(object):
 			return
 		self.node.lock.acquire()
 		try:
-			print("Confirming Block")
+			logging.info("Confirming Block")
 			block_2_hash = block.copy()
-			print(block_2_hash)
+			logging.info(block_2_hash)
 			block_2_hash.pop('txns')
-			print(block_2_hash)
+			logging.info(block_2_hash)
 			block_hash = self.hash_block_dict(block_2_hash)
-			print(block)
+			logging.info(block)
 			txns = []
 			if len(block['txns']) > 1:
 				txns = block['txns'][1:]
-			print(txns)
+			logging.info(txns)
 			txn_hash = self.hash_block_dict(txns)
-			print(txn_hash.hex())
-			print(block['txn_hash'])
+			logging.info(txn_hash.hex())
+			logging.info(block['txn_hash'])
 			assert(txn_hash.hex() == block['txn_hash'])
 
 			pubKey = pub_key_from_string(pubkey)
 
 			verify_msg(bytes.fromhex(signature),block_hash,pubKey)
-			print("VERIFIED")
+			logging.info("VERIFIED")
 
 			previous_hash = bytearray(32).hex()
 
 			if (len(self.hashes) > 0): #IF LENGTH PREVIOUS HASHES ARRAY GREATER THAN 0
 				previous_hash = self.hashes[-1]
 			assert (block['prev_block_hash'] == previous_hash) #ENSURE PREVIOUS HASH IS SAME AS PREVIOUS HASH ON BLOCK
-			print("VERIFIED PREVIOUS HASH")
+			logging.info("VERIFIED PREVIOUS HASH")
 
 			#updated_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big'))
 			
@@ -398,38 +398,38 @@ class ChainController(object):
 			assert (block['target'] == self.block_target)
 			#CHECK TIME
 			assert (block['time'] <= int(time.time() + 20*60) and block['time'] >= int(time.time()) - 3600) #ENSURE TIME IS CORRECT BLOCKS WITH TIME GREATER THAN CURRENT TIME OR BLOCKS NOT CONFIRMED AFTER AN HOUR WILL NOT BE CONFIRMED
-			print("VERIFIED TIME")
+			logging.info("VERIFIED TIME")
 			#VERIFY TRANSACTIONS
 			assert (len(block['txns'][0]['inputs']) == 1 and len(block['txns'][0]['outputs']) == 1) #VERIFY COINBASE TRANSACTION HAS ONE INPUT AND ONE OUTPUT
-			print("VERIFIED COINBASE")
+			logging.info("VERIFIED COINBASE")
 			#CHECK INPUTS FORMAT TO CONFIRM COINBASE TRANSACTION FORMATTED PROPERLY
 			assert (block['txns'][0]['inputs'][0]['prev_txid'] == bytearray(16).hex() and block['txns'][0]['inputs'][0]['prev_txn_output'] == 0 and block['txns'][0]['inputs'][0]['sig_prev_out'] == bytearray(64).hex())
-			print("VERIFIED INPUTS")
+			logging.info("VERIFIED INPUTS")
 			#CHECK OUTPUTS TO ENSURE THAT ADDRESS PROVIDED IN COINBASE TRANSACTION IS CORRECT
 			assert (block['txns'][0]['outputs'][0]['address'] == hash_v_key(pubKey).hex())
-			print("VERIFIED ADDRESS")
+			logging.info("VERIFIED ADDRESS")
 			#CHECK VALUE OF COINBASE TRANSACTION EQUAL TO THE CORRECT REWARD VALUE
 			reward = int(20 * (1/max(int(2*(time.time() - 1577836800)/315360000),1)))
 			if len(block['txns']) > 1:
 				reward += self.confirm_txns(txns=block['txns'][1:],gen=False)
-			print("Reward Recalculated:", reward)
+			logging.info("Reward Recalculated:", reward)
 
 			assert (block['txns'][0]['outputs'][0]['value'] == reward)
-			print("VERIFIED TXNS")
+			logging.info("VERIFIED TXNS")
 
 			assert (len(bytes.fromhex(block['txns'][0]['txnid'])) == 16)
-			print("VERIFIED TXN ID")
+			logging.info("VERIFIED TXN ID")
 
 			assert (block_hash < (bytes.fromhex(self.block_target) + bytearray((32-len(bytes.fromhex(self.block_target))))))
-			print("VERIFIED HASH")
+			logging.info("VERIFIED HASH")
 			self.node.lock.release()
 			message = {'type':8,'hash':block_hash.hex(),'block':block}
 			self.node.server_broadcast(json.dumps(message))
 			self.recv_block_confirm(block_hash.hex(),block)
 
 		except Exception as e:
-			print("COULD NOT CONFIRM")
-			print(e)
+			logging.info("COULD NOT CONFIRM")
+			logging.info(e)
 			self.node.lock.release()
 			message = {'type':8,'hash':False,'block':False}
 			self.node.server_broadcast(json.dumps(message))
@@ -443,21 +443,21 @@ class ChainController(object):
 		if hash not in self.block_confirmations:
 			self.block_confirmations[hash] = 0
 		self.block_confirmations[hash] += 1
-		print("Block Confirm Received:",hash,max(self.block_confirmations.values()), "of", (len(self.confirmation_nodes)/2))
+		logging.info("Block Confirm Received:",hash,max(self.block_confirmations.values()), "of", (len(self.confirmation_nodes)/2))
 		if max(self.block_confirmations.values()) > (len(self.confirmation_nodes)/2):
 			if hash == False:
-				print("Failed to Confirm Block")
+				logging.info("Failed to Confirm Block")
 				self.block_confirmations[hash] = 0
 				self.node.lock.release()
 				if self.loop:
 					if selfconfirm:
 						if self.mining:
-							print("Continue Mining")
+							logging.info("Continue Mining")
 						return
 					self.mining = False
 					threading.Thread(target=self.start_mining).start()
 				return
-			print("New Block Confirmed")
+			logging.info("New Block Confirmed")
 			self.block_mined = True
 			hash = max(self.block_confirmations, key=self.block_confirmations.get)
 			if block != False:
@@ -469,25 +469,25 @@ class ChainController(object):
 			self.target_receipts = {}
 			self.target_confirmations = {}
 			self.target_confirmed = False
-			print("New Block Added")
+			logging.info("New Block Added")
 			for txn in block['txns']:
 				if txn in self.txn_pool:
 					self.txn_pool.remove(txn)
 				if txn in self.confirmed_txns:
 					self.confirmed_txns.remove(txn)
-			print("Mem Pool Cleared")
+			logging.info("Mem Pool Cleared")
 			if self.loop:
 				self.node.lock.release()
 				message = {'type':9,'block':block,'hash':hash}
 				self.node.server_broadcast(json.dumps(message))
 				threading.Thread(target=self.start_mining).start()
 				return
-		print("Clear Lock")
+		logging.info("Clear Lock")
 		self.node.lock.release()
-		print("Broadcast Message")
+		logging.info("Broadcast Message")
 		message = {'type':9,'block':block,'hash':hash}
 		self.node.server_broadcast(json.dumps(message))
-		print("Message Broadcast")
+		logging.info("Message Broadcast")
 
 			
 
@@ -495,11 +495,11 @@ class ChainController(object):
 		message = {'type':5}
 		self.node.client_broadcast(json.dumps(message))
 
-		print("Waiting For Target")
+		logging.info("Waiting For Target")
 		while self.block_target == None or self.block_target == False:
 			continue
 
-		print("Target Set:",self.block_target)
+		logging.info("Target Set:",self.block_target)
 		self.confirm_target()
 
 	def update_target(self):
@@ -509,30 +509,26 @@ class ChainController(object):
 			diff = block_1['time'] - block_2['time']
 			if block_1['time'] - block_2['time'] > 600:
 				adjustment = int(int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') / 0x10)
-				print((int.from_bytes(bytes.fromhex(self.block_target),byteorder='big')) + int((adjustment * (diff/600))) < 0xFFFFFFFFFFFF)
-				print((int.from_bytes(bytes.fromhex(self.block_target),byteorder='big')) + int((adjustment * (diff/600))))
 				if (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big')) + int((adjustment * (diff/600))) < (0xFFFFFFFFFFFF):
-					print("Increasing Target")
+					logging.info("Increasing Target")
 					self.block_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') + int((adjustment * (diff/600)))).to_bytes(6, byteorder='big').hex()
-					print(self.block_target)
+					logging.info(self.block_target)
 					return
 				else:
 					self.block_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') + int((adjustment))).to_bytes(6, byteorder='big').hex()
-					print(self.block_target)
+					logging.info(self.block_target)
 					return
 			else:
 				adjustment = int(int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') / 0x10)
 				#print(adjustment * (600/max(diff,1)))
-				print(int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') > adjustment * (600/max(diff,1)) + 0x1111111)
-				print((int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') - int((adjustment * ((600/max(diff,1))-1) + 0x1111111))))
 				if (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') > (adjustment * (600/max(diff,1))) + 0x1111111):
-					print("Decreasing Target")
+					logging.info("Decreasing Target")
 					self.block_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') - int((adjustment * ((600/max(diff,1))-1)))).to_bytes(6, byteorder='big').hex()
-					print(self.block_target)
+					logging.info(self.block_target)
 					return
 				else:
 					self.block_target = (int.from_bytes(bytes.fromhex(self.block_target),byteorder='big') - int((adjustment))).to_bytes(6, byteorder='big').hex()
-					print(self.block_target)
+					logging.info(self.block_target)
 					return
 		else:
 			return
@@ -548,12 +544,12 @@ class ChainController(object):
 		self.target_receipts[target] += 1
 
 		if max(self.target_receipts.values()) > (len(self.confirmation_nodes)/2):
-			print("Target Acquired")
+			logging.info("Target Acquired")
 			self.block_target = max(self.target_receipts, key=self.target_receipts.get)
 			self.target_receipts = {}
 		
 			if self.block_target == False or self.block_target == None or self.block_target == self.block_target_prev:
-				print("Setting Target")
+				logging.info("Setting Target")
 				self.set_target()
 		
 		
@@ -579,12 +575,12 @@ class ChainController(object):
 		
 		message = {'type':7,'target':self.block_target}
 		self.node.client_broadcast(json.dumps(message))
-		print("Asking To Confirm", self.block_target)
+		logging.info("Asking To Confirm", self.block_target)
 
-		print("Confirming Target")
+		logging.info("Confirming Target")
 		while self.target_confirmed == False:
 			continue
-		print("Target Confirmed")
+		logging.info("Target Confirmed")
 
 	def recv_target_confirm(self,target):
 		if self.target_confirmed == True or self.block_target == None:
@@ -592,9 +588,9 @@ class ChainController(object):
 		self.node.lock.acquire()
 		if self.block_target not in self.target_confirmations:
 			self.target_confirmations[self.block_target] = [0,0]
-		print("Target Confirm Received")
-		print(target)
-		print(self.block_target)
+		logging.info("Target Confirm Received")
+		logging.info(target)
+		logging.info(self.block_target)
 
 		if target == self.block_target:
 			self.target_confirmations[self.block_target][0] += 1
@@ -612,7 +608,7 @@ class ChainController(object):
 			self.target_confirmed = False
 			self.target_confirmations = {}
 
-			print("Target Not Confirmed! Stopping Mine")
+			logging.info("Target Not Confirmed! Stopping Mine")
 			#self.get_target()
 		self.node.lock.release()
 		return
@@ -638,29 +634,29 @@ class ChainController(object):
 		self.download_hash_verifications[hash] += 1
 
 		if max(self.download_hash_verifications.values()) > (len(self.confirmation_nodes)/2) and hash != False:
-			print("Hash Confirmed Request Download")
+			logging.info("Hash Confirmed Request Download")
 			try:
 				hash = max(self.download_hash_verifications, key=self.download_hash_verifications.get)
 				self.request_download(hash)
 				self.node.lock.release()
 				return
 			except:
-				print("ERROR REQUESTING DOWNLOAD")
+				logging.info("ERROR REQUESTING DOWNLOAD")
 		self.node.lock.release()
 			
 	def request_download(self,hash):
-		print("Requesting Download")
+		logging.info("Requesting Download")
 		message = {"type":4,"hash":hash}
 		self.node.client_broadcast(json.dumps(message))
 
 	def download_block(self,fname,block,hash):
 		self.node.lock.acquire()
-		print("Received Download")
-		print("Acquired Lock")
+		logging.info("Received Download")
+		logging.info("Acquired Lock")
 		if hash in self.hashes:
 			chain_size = self.get_chain_size()
 			if self.confirmed_size == chain_size and self.chain_verified:
-				print("Chain Downloaded")
+				logging.info("Chain Downloaded")
 				self.chain_downloaded = True
 				self.node.lock.release()
 				message = {"type":12}
@@ -679,9 +675,10 @@ class ChainController(object):
 				self.download_hash_verifications = {}
 				block_num = self.hashes.index(hash)
 				chain_size = self.get_chain_size()
-				print("Block {0} Downloaded".format(block_num))
+				logging.info("Block {0} Downloaded".format(block_num))
+				
 				if self.confirmed_size == chain_size and self.chain_verified:
-					print("Chain Downloaded")
+					logging.info("Chain Downloaded")
 					self.chain_downloaded = True
 					self.node.lock.release()
 					message = {"type":12}
@@ -735,20 +732,20 @@ class ChainController(object):
 			sizes = list(self.chain_size_confirmations.keys())
 			size = sizes[confirmations.index(max(confirmations))]
 			self.confirmed_size = size
-			print("Confirmed Size:", size)
+			logging.info("Confirmed Size:", size)
 			if size == 0:
 				self.chain_verified = True
 				self.chain_downloaded = True
-				print("Chain Has No Blocks. Chain Downloaded")
+				logging.info("Chain Has No Blocks. Chain Downloaded")
 				self.node.lock.release()
 				message = {"type":12}
 				self.node.client_broadcast(json.dumps(message))
 				return
 			self.remove_extra_blocks()
 			if size == self.get_chain_size():
-				print("No Download Necessary")
+				logging.info("No Download Necessary")
 			else:
-				print("Download Required")
+				logging.info("Download Required")
 			
 			self.start_verify_chain()
 
@@ -756,7 +753,7 @@ class ChainController(object):
 	
 	#Step 4: Verify Current Chain Hashes
 	def start_verify_chain(self):
-		print("Starting Chain Verification")
+		logging.info("Starting Chain Verification")
 		self.node.controller.index_chain()
 		if len(self.hashes) > 0:
 			message = {"type":2,"block":0,"hash":self.hashes[0]}
@@ -782,7 +779,7 @@ class ChainController(object):
 			print("Block {0} of {1}: Verified".format(block,len(self.hashes) - 1), end='')
 			print('\r', end='')
 			if block == len(self.hashes) - 1 and self.chain_verified == False:
-				print("Local Verification Completed")
+				logging.info("Local Verification Completed")
 				self.chain_verified = True
 			elif self.chain_verified == False:
 				self.node.lock.release()
@@ -790,7 +787,7 @@ class ChainController(object):
 				self.node.client_broadcast(json.dumps(message))
 			
 			if block == self.confirmed_size - 1 and self.chain_verified:
-				print("Verified Chain")
+				logging.info("Verified Chain")
 				self.chain_downloaded = True
 				message = {"type":12}
 				self.node.client_broadcast(json.dumps(message))
@@ -799,7 +796,7 @@ class ChainController(object):
 
 		#Step 6: Servers returned different hash Bad Hash Exists Remove Current Block and Download New Block
 		if self.hash_verifications[hash][1] > (len(self.confirmation_nodes)/2):
-			print("Block {0}: Not Verified".format(block))
+			logging.info("Block {0}: Not Verified".format(block))
 			deleted = self.remove_block(block)
 			self.hash_verifications[hash] = [0,0]
 			self.get_download_hash(block)
@@ -883,7 +880,7 @@ class ChainController(object):
 
 			in_value += float("{:.8f}".format(value['Value']))
 
-			print("Inputs", {"PrevTXID":value['TxID'],"Address:":value['Address'],"Value":float("{:.8f}".format(value['Value']))})
+			#print("Inputs", {"PrevTXID":value['TxID'],"Address:":value['Address'],"Value":float("{:.8f}".format(value['Value']))})
 		
 		out_value = 0
 
@@ -891,15 +888,15 @@ class ChainController(object):
 
 			out_value += float("{:.8f}".format(value['value'])) #ADD VALUE TO OUT VALUE
 
-			print("Outputs", {"Address:":value['address'],"Value":float("{:.8f}".format(value['value']))})
+			#print("Outputs", {"Address:":value['address'],"Value":float("{:.8f}".format(value['value']))})
 		
 		if in_value > out_value: #DETERMINE IF IN VALUE GREATER THAN OUT VALUE AND RETURN CHANGE TO FIRST INPUT ADDRESS PROVIDED
 
 			output_addresses.append({"address":input_addresses[0]['Address'],"value":float("{:.8f}".format((in_value-out_value-fees)))}) #GENERATE OUTPUTS
 
-			print({"address":input_addresses[0]['Address'],"value":float("{:.8f}".format((in_value-out_value-fees)))})
+			#print({"address":input_addresses[0]['Address'],"value":float("{:.8f}".format((in_value-out_value-fees)))})
 
-			print("Fees: ", fees)
+			#print("Fees: ", fees)
 
 		txn = {"txnid":txid,"time":int(time.time()),"fee":fees,"inputs":inputs,"outputs":output_addresses} #BUILD TRANSACTION
 		
@@ -920,7 +917,7 @@ class ChainController(object):
 
 			self.txn_confirmations[txn['txnid']] = [0,0]
 		
-		print("Confirming Transaction")
+		logging.info("Confirming Transaction")
 
 		try:
 			total_in_value = 0 #SET UP TOTAL IN VARIABLE
@@ -931,7 +928,7 @@ class ChainController(object):
 			#CHECK INPUTS
 			assert (len(txn['inputs']) > 0) #AT LEAST ONE INPUT IN TRANSACTION
 
-			print("CONFIRMED GENERAL")
+			#logging.info("CONFIRMED GENERAL")
 
 			for x, input_val in enumerate(txn['inputs']): #FOR EACH INPUT
 
@@ -960,7 +957,7 @@ class ChainController(object):
 				#print("Confirmed Transaction Pool")
 				
 				assert(self.confirmUtxo(input_val))
-				print("Input {0} of {1} Confirmed".format(x,len(txn['inputs'])))
+				logging.info("Input {0} of {1} Confirmed".format(x,len(txn['inputs'])))
 				#print("Confirmed UTXOs")
 
 			#CHECK OUTPUTS
@@ -985,7 +982,7 @@ class ChainController(object):
 
 			self.recv_txn_confirm(txn['txnid'],txn)
 
-			print("Transaction Confirmed")
+			logging.info("Transaction Confirmed")
 
 			message = {'type':10,'txnid':txn['txnid'],'txn':txn}
 
@@ -995,11 +992,11 @@ class ChainController(object):
 			message = {'type':10,'txnid':txn['txnid'],'txn':False}
 			self.node.client_broadcast(json.dumps(message))
 			self.recv_txn_confirm(txn['txnid'],False)
-			print("Unable to Confirm Transaction")
+			logging.info("Unable to Confirm Transaction")
 
 	def recv_txn_confirm(self,txnid,txn):
 		self.node.lock.acquire()
-		print("Transaction Confirmation Received")
+		logging.info("Transaction Confirmation Received")
 		if txn in self.txn_pool:
 			self.node.lock.release()
 			return
@@ -1011,10 +1008,8 @@ class ChainController(object):
 		else:
 			self.txn_confirmations[txnid][1] += 1
 
-		print(self.txn_confirmations[txnid])
-
 		if self.txn_confirmations[txnid][0] > (len(self.confirmation_nodes)/2):
-			print("Adding to Mem Pool")
+			logging.info("Adding to Mem Pool")
 			self.txn_pool.append(txn)
 			message = {'type':10,'txn':txn}
 			self.node.server_broadcast(json.dumps(message))
@@ -1026,7 +1021,7 @@ class ChainController(object):
 		
 		if self.txn_confirmations[txnid][1] > (len(self.confirmation_nodes)/2):
 			del self.txn_confirmations[txnid]
-			print("Transaction Rejected")
+			logging.info("Transaction Rejected")
 
 		self.node.lock.release()
 		return

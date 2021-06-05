@@ -45,7 +45,7 @@ def verify_msg(signature,string,publicKey):
 def test_verify(sk):
     signature = sk.sign(b"message")
     vk = sk.verifying_key
-    print("TESTING")
+    logging.info("TESTING")
     assert vk.verify(signature, b"message")
 
 

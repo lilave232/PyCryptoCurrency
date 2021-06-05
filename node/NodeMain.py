@@ -5,6 +5,7 @@ import errno
 import sys
 import json
 import time
+import logging
 from node.parse_messages import *
 from chain.ChainController import *
 from chain.Wallet import *
@@ -46,12 +47,12 @@ class Server:
 			self.server_thread = threading.Thread(target=self.run)
 			if self.server_thread.is_alive() == False:
 				self.server_thread.start()
-				print("Listening on port:{0}".format(self.port))
+				logging.info("Listening on port:{0}".format(self.port))
 			else:
-				print("Server Already Running")
+				logging.info("Server Already Running")
 		except:
 			self.node.stop_server()
-			print("Unable to Start Server")
+			logging.info("Unable to Start Server")
 	
 	def close(self):
 		if self.connected:
@@ -66,7 +67,7 @@ class Server:
 				self.clients.append(peer)
 				threading.Thread(target=self.read,args=(peer,)).start()
 		except socket.error as socketerror:
-			print("Error: ", socketerror)
+			logging.info("Error: ", socketerror)
 		except KeyboardInterrupt:
 			self.server.close()
 
@@ -76,7 +77,7 @@ class Server:
 				received = bytes("",'utf-8')
 				data = client.client.recv(1024)
 				if len(data) == 0:
-					print("CLIENT DISCONNECTED")
+					logging.info("CLIENT DISCONNECTED")
 					if client in self.clients:
 						self.clients.remove(client)
 					sys.exit()
@@ -86,7 +87,7 @@ class Server:
 						break
 					data = client.client.recv(1024)
 					if len(data) == 0:
-						print("CLIENT DISCONNECTED")
+						logging.info("CLIENT DISCONNECTED")
 						if client in self.clients:
 							self.clients.remove(client)
 						sys.exit()
@@ -154,7 +155,7 @@ class Client:
 			threading.Thread(target=self.read).start()
 		except:
 			self.connected = False
-			print("Unable to Connect")
+			logging.info("Unable to Connect")
 			return
 
 	def close(self):
@@ -193,8 +194,8 @@ class Client:
 				received = bytes("",'utf-8')
 				data = self.client.recv(1024)
 				if len(data) == 0:
-					print("DATA FAILURE 1")
-					print("SERVER DISCONNECTED")
+					logging.info("DATA FAILURE 1")
+					logging.info("SERVER DISCONNECTED")
 					self.client.close()
 					self.connected = False
 					self.node.remove_client(self)
@@ -205,8 +206,8 @@ class Client:
 						break
 					data = self.client.recv(1024)
 					if len(data) == 0:
-						print("DATA FAILURE 2")
-						print("SERVER DISCONNECTED")
+						logging.info("DATA FAILURE 2")
+						logging.info("SERVER DISCONNECTED")
 						self.client.close()
 						self.connected = False
 						self.node.remove_client(self)
@@ -215,8 +216,8 @@ class Client:
 					#print(msg)
 					self.node.parse_client_message(self,msg)
 		except:
-			print("OVERALL FAILURE")
-			print("SERVER DISCONNECTED")
+			logging.info("OVERALL FAILURE")
+			logging.info("SERVER DISCONNECTED")
 			self.client.close()
 			self.connected = False
 			self.node.remove_client(self)
@@ -260,14 +261,14 @@ class P2PNetNode(object):
 			js_config = json.load(open(file, "r"))
 			print(js_config)
 		except:
-			print("Unable to Set Config")
+			logging.info("Unable to Set Config")
 
 	def start_server(self,server_address = "localhost",server_port=4444):
 		if self.server == None or self.server.connected == False:
 			self.server = Server(server_address,socket.socket(socket.AF_INET,socket.SOCK_STREAM), server_port,self)
 			self.server.connect()
 		else:
-			print("Server Already Running")
+			logging.info("Server Already Running")
 
 	def remove_client(self,client):
 		if client in self.clients:
@@ -281,20 +282,20 @@ class P2PNetNode(object):
 
 	def start_client(self,address="localhost",port=4444):
 		self.lock.acquire()
-		print("Attempting to Connect To: ", address, port)
+		logging.info("Attempting to Connect To: ", address, port)
 		print(self.clients)
 		if (self.server != None and address == self.server.address and port == self.server.port) or ((address,port) in [(client.address, client.port) for client in self.clients]):
 			self.pause = False
-			print("CLIENT NOT STARTED")
+			logging.info("CLIENT NOT STARTED")
 			self.lock.release()
 			return
 		client = Client(address,socket.socket(socket.AF_INET, socket.SOCK_STREAM),port,self)
 		client.connect()
 		if client.connected:
-			print("CLIENT CONNECTED TO: ", address, port)
+			logging.info("CLIENT CONNECTED TO: ", address, port)
 			self.clients.append(client)
 		else:
-			print("CLIENT NOT STARTED")
+			logging.info("CLIENT NOT STARTED")
 		self.lock.release()
 		return client
 
@@ -325,7 +326,7 @@ class P2PNetNode(object):
 		if self.server != None:
 			print("Incoming: " + ','.join([str(client) for client in self.server.clients]))
 		else:
-			print("Incoming Not Connected")
+			logging.info("Incoming Not Connected")
 	
 	def list_outgoing(self):
 		print("Outgoing: " + ','.join([str(client) for client in self.clients]))
