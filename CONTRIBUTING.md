@@ -47,4 +47,4 @@ An example [Python Guidelines](https://www.python.org/dev/peps/pep-0008/)
 By contributing, you agree that your contributions will be licensed under its GNU General Public License v3.0.
 
 ## References
-This document was adapted from the open-source contribution guidelines for [Basic Template](https://gist.github.com/briandk/3d2e8b3ec8daf5a27a62)
+This document was adapted from the a [Basic Template](https://gist.github.com/briandk/3d2e8b3ec8daf5a27a62)
