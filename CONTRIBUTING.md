@@ -39,7 +39,7 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 - Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
 ## Use a Consistent Coding Style
-An example [Facebook's Guidelines](https://github.com/facebook/draft-js/blob/a9316a723f9e918afde44dea68b5f9f39b7d9b00/CONTRIBUTING.md)
+An example [Python Guidelines](https://www.python.org/dev/peps/pep-0008/)
 
 * Please use tabs for indentation
 
@@ -47,4 +47,4 @@ An example [Facebook's Guidelines](https://github.com/facebook/draft-js/blob/a93
 By contributing, you agree that your contributions will be licensed under its GNU General Public License v3.0.
 
 ## References
-This document was adapted from the open-source contribution guidelines for [Facebook's Draft](https://github.com/facebook/draft-js/blob/a9316a723f9e918afde44dea68b5f9f39b7d9b00/CONTRIBUTING.md)
+This document was adapted from the open-source contribution guidelines for [Basic Template](https://gist.github.com/briandk/3d2e8b3ec8daf5a27a62)
