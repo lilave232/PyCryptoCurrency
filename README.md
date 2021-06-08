@@ -46,7 +46,9 @@ python3 main.py
 ```
 
 A second PyCurrency terminal will start.
-In this window type start server localhost 5555 (Note: you can enter any valid address or port). The output will be as follows.
+In this window type start server localhost 5555 (Note: you can enter any valid address or port). The output will be as follows. 
+
+Note: Ensure when trying to start your server for external connections you must setup port forwarding there are many articles on how to do this online.
 
 ```bash
 Enter Command: start server localhost 5555
@@ -56,33 +58,19 @@ Enter Command:
 
 In the same window type start client or if you changed the default in the first window type start client address port and then hit Enter, the output will be as follows.
 
+If you would like to connect your client to an external node, try using any of the nodes from the file known_hosts.txt in the repository. Copy and paste one of the address/port pairs.
+
 ```bash
 Enter Command: start client
-Attempting to Connect To:  localhost 4444
-[]
-CLIENT CONNECTED TO:  localhost 4444
-Enter Command: Attempting to Connect To:  localhost 4444
-[<node.NodeMain.Client object at 0x107bd2910>]
-CLIENT NOT STARTED
 
 or 
 
 Enter Command: start client localhost 4444
-Attempting to Connect To:  localhost 4444
-[]
-CLIENT CONNECTED TO:  localhost 4444
-Enter Command: Attempting to Connect To:  localhost 4444
-[<node.NodeMain.Client object at 0x107bd2910>]
-CLIENT NOT STARTED
-```
 
-Your first window should now show.
-```bash
-Enter Command: Attempting to Connect To:  localhost 5555
-[]
-CLIENT CONNECTED TO:  localhost 5555
-```
+or 
 
+Enter Command: start client pycrypto.ddns.net 44444
+```
 
 Both clients are now connected to the network. You can check this by running the listpeers command in either of the windows.
 
