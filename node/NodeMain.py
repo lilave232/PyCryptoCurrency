@@ -282,7 +282,7 @@ class P2PNetNode(object):
 
 	def start_client(self,address="localhost",port=4444):
 		self.lock.acquire()
-		logging.info("Attempting to Connect To: ", address, port)
+		logging.info("Attempting to Connect To: {}:{}".format(address,port))
 		print(self.clients)
 		if (self.server != None and address == self.server.address and port == self.server.port) or ((address,port) in [(client.address, client.port) for client in self.clients]):
 			self.pause = False
@@ -292,7 +292,7 @@ class P2PNetNode(object):
 		client = Client(address,socket.socket(socket.AF_INET, socket.SOCK_STREAM),port,self)
 		client.connect()
 		if client.connected:
-			logging.info("CLIENT CONNECTED TO: ", address, port)
+			logging.info("CLIENT CONNECTED TO: {}:{}".format(address, port))
 			self.clients.append(client)
 		else:
 			logging.info("CLIENT NOT STARTED")
