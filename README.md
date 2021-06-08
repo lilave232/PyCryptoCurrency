@@ -58,18 +58,12 @@ Enter Command:
 
 In the same window type start client or if you changed the default in the first window type start client address port and then hit Enter, the output will be as follows.
 
-If you would like to connect your client to an external node, try using any of the nodes from the file known_hosts.txt in the repository. Copy and paste one of the address/port pairs.
-
 ```bash
 Enter Command: start client
 
 or 
 
 Enter Command: start client localhost 4444
-
-or 
-
-Enter Command: start client pycrypto.ddns.net 44444
 ```
 
 Both clients are now connected to the network. You can check this by running the listpeers command in either of the windows.
