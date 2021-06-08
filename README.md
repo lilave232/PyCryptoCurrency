@@ -27,6 +27,8 @@ Type start server and it will start a server at the default port (4444) and set 
 
 If you would like to set a connect address and port type start server address port. Providing the address and port (i.e. start server 127.0.0.1 4444)
 
+Note: If you would like devices external to your network to be able to connect to your server you must provide your public IP address and port forward the port you wish to use. As this is device specific there are plenty of articles online the can help. 
+
 ```bash
 Enter Command: start server localhost 4444
 Listening on port:4444
@@ -48,7 +50,7 @@ python3 main.py
 A second PyCurrency terminal will start.
 In this window type start server localhost 5555 (Note: you can enter any valid address or port). The output will be as follows. 
 
-Note: Ensure when trying to start your server for external connections you must setup port forwarding there are many articles on how to do this online.
+Note: If you would like devices external to your network to be able to connect to your server you must provide your public IP address and port forward the port you wish to use. As this is device specific there are plenty of articles online the can help. 
 
 ```bash
 Enter Command: start server localhost 5555
@@ -58,12 +60,18 @@ Enter Command:
 
 In the same window type start client or if you changed the default in the first window type start client address port and then hit Enter, the output will be as follows.
 
+If you wish to connect to an external node try connecting to any of the nodes listed in the file [known_nodes.txt]: https://github.com/lilave232/PyCryptoCurrency/blob/v2/known_nodes.txt.
+
 ```bash
 Enter Command: start client
 
 or 
 
 Enter Command: start client localhost 4444
+
+or 
+
+Enter Command: start client pycrypto.ddns.net 44444
 ```
 
 Both clients are now connected to the network. You can check this by running the listpeers command in either of the windows.
