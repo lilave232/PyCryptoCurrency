@@ -173,7 +173,7 @@ class ChainController(object):
 			self.node.lock.release()
 			t = time.localtime()
 			current_time = time.strftime("%H:%M:%S", t)
-			logging.info("Started Mining:",current_time)
+			logging.info("Started Mining: {}".format(current_time))
 			self.block_confirmations = {}
 			self.block_mined = False
 			self.target_receipts = {}
@@ -413,7 +413,7 @@ class ChainController(object):
 			reward = int(20 * (1/max(int(2*(time.time() - 1577836800)/315360000),1)))
 			if len(block['txns']) > 1:
 				reward += self.confirm_txns(txns=block['txns'][1:],gen=False)
-			logging.info("Reward Recalculated:", reward)
+			logging.info("Reward Recalculated:{}".format(reward))
 
 			assert (block['txns'][0]['outputs'][0]['value'] == reward)
 			logging.info("VERIFIED TXNS")
@@ -733,7 +733,7 @@ class ChainController(object):
 			sizes = list(self.chain_size_confirmations.keys())
 			size = sizes[confirmations.index(max(confirmations))]
 			self.confirmed_size = size
-			logging.info("Confirmed Size:", size)
+			logging.info("Confirmed Size:".format(size))
 			if size == 0:
 				self.chain_verified = True
 				self.chain_downloaded = True
