@@ -733,7 +733,7 @@ class ChainController(object):
 			sizes = list(self.chain_size_confirmations.keys())
 			size = sizes[confirmations.index(max(confirmations))]
 			self.confirmed_size = size
-			logging.info("Confirmed Size:".format(size))
+			logging.info("Confirmed Size:{}".format(size))
 			if size == 0:
 				self.chain_verified = True
 				self.chain_downloaded = True

@@ -159,7 +159,7 @@ class Wallet(object):
 	def getBalance(self,type=0):
 
 		if type == 0:
-			logging.info("CONFIRMED BALANCE:",sum([x['Value'] for x in self.utxos.values()]))
+			logging.info("CONFIRMED BALANCE: {}".format(sum([x['Value'] for x in self.utxos.values()])))
 			return float("{:.8f}".format(sum([x['Value'] for x in self.utxos.values()])))
 
 		if type == 1:
