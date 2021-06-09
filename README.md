@@ -68,10 +68,6 @@ Enter Command: start client
 or 
 
 Enter Command: start client localhost 4444
-
-or 
-
-Enter Command: start client pycrypto.ddns.net 44444
 ```
 
 Both clients are now connected to the network. You can check this by running the listpeers command in either of the windows.
