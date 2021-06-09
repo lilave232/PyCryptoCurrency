@@ -444,7 +444,7 @@ class ChainController(object):
 		if hash not in self.block_confirmations:
 			self.block_confirmations[hash] = 0
 		self.block_confirmations[hash] += 1
-		logging.info("Block Confirm Received:",hash,max(self.block_confirmations.values()), "of", (len(self.confirmation_nodes)/2))
+		logging.info("Block Confirm Received:{} of {}".format(hash,max(self.block_confirmations.values()), (len(self.confirmation_nodes)/2)))
 		if max(self.block_confirmations.values()) > (len(self.confirmation_nodes)/2):
 			if hash == False:
 				logging.info("Failed to Confirm Block")
@@ -500,7 +500,7 @@ class ChainController(object):
 		while self.block_target == None or self.block_target == False:
 			continue
 
-		logging.info("Target Set:",self.block_target)
+		logging.info("Target Set:{}".format(self.block_target))
 		self.confirm_target()
 
 	def update_target(self):
@@ -576,7 +576,7 @@ class ChainController(object):
 		
 		message = {'type':7,'target':self.block_target}
 		self.node.client_broadcast(json.dumps(message))
-		logging.info("Asking To Confirm", self.block_target)
+		logging.info("Asking To Confirm {}".format(self.block_target))
 
 		logging.info("Confirming Target")
 		while self.target_confirmed == False:

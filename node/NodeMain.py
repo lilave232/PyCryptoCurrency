@@ -63,6 +63,7 @@ class Server:
 		try:
 			while self.connected:
 				conn, info = self.server.accept()
+				print("Server Accepted")
 				peer = Peer(info[0],conn,info[1])
 				self.clients.append(peer)
 				threading.Thread(target=self.read,args=(peer,)).start()
@@ -283,7 +284,6 @@ class P2PNetNode(object):
 	def start_client(self,address="localhost",port=4444):
 		self.lock.acquire()
 		logging.info("Attempting to Connect To: {}:{}".format(address,port))
-		print(self.clients)
 		if (self.server != None and address == self.server.address and port == self.server.port) or ((address,port) in [(client.address, client.port) for client in self.clients]):
 			self.pause = False
 			logging.info("CLIENT NOT STARTED")
