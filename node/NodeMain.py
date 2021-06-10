@@ -81,7 +81,8 @@ class Server:
 					logging.info("CLIENT DISCONNECTED")
 					if client in self.clients:
 						self.clients.remove(client)
-						self.node.controller.confirmation_nodes.remove(client)
+						if client in self.node.controller.confirmation_nodes:
+							self.node.controller.confirmation_nodes.remove(client)
 					sys.exit()
 				while data:
 					received += data
@@ -92,13 +93,16 @@ class Server:
 						logging.info("CLIENT DISCONNECTED")
 						if client in self.clients:
 							self.clients.remove(client)
-							self.node.controller.confirmation_nodes.remove(client)
+							if client in self.node.controller.confirmation_nodes:
+								self.node.controller.confirmation_nodes.remove(client)
 						sys.exit()
 				for msg in received.decode('utf-8').split("<EOM>"):
 					self.node.parse_server_message(client,msg)
 		except:
 			if client in self.clients:
 				self.clients.remove(client)
+				if client in self.node.controller.confirmation_nodes:
+					self.node.controller.confirmation_nodes.remove(client)
 			sys.exit()
 			
 	
