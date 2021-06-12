@@ -77,33 +77,35 @@ class Server:
 			while self.connected:
 				received = bytes("",'utf-8')
 				data = client.client.recv(1024)
-				if len(data) == 0:
+				if not data:
+				# if len(data) == 0:
 					logging.info("CLIENT DISCONNECTED")
 					if client in self.clients:
 						self.clients.remove(client)
 						if client in self.node.controller.confirmation_nodes:
 							self.node.controller.confirmation_nodes.remove(client)
-					sys.exit()
+					return
 				while data:
 					received += data
 					if received[-5:] == bytes("<EOM>",'utf-8'):
 						break
 					data = client.client.recv(1024)
-					if len(data) == 0:
+					if not data:
 						logging.info("CLIENT DISCONNECTED")
 						if client in self.clients:
 							self.clients.remove(client)
 							if client in self.node.controller.confirmation_nodes:
 								self.node.controller.confirmation_nodes.remove(client)
-						sys.exit()
+						return
 				for msg in received.decode('utf-8').split("<EOM>"):
 					self.node.parse_server_message(client,msg)
 		except:
+			logging.info("CLIENT DISCONNECTED")
 			if client in self.clients:
 				self.clients.remove(client)
 				if client in self.node.controller.confirmation_nodes:
 					self.node.controller.confirmation_nodes.remove(client)
-			sys.exit()
+			return
 			
 	
 	def broadcast(self,msg):
