@@ -53,6 +53,12 @@ class Server:
 		except:
 			self.node.stop_server()
 			logging.info("Unable to Start Server")
+
+	def reset(self):
+		self.connected = False
+		self.clients = []
+		self.server_thread  = None
+		self.connect()
 	
 	def close(self):
 		if self.connected:
@@ -68,9 +74,10 @@ class Server:
 				self.clients.append(peer)
 				threading.Thread(target=self.read,args=(peer,)).start()
 		except socket.error as socketerror:
-			logging.info("Error: ", socketerror)
+			logging.info("Error: ".format(socketerror))
+			self.reset()
 		except KeyboardInterrupt:
-			self.server.close()
+			self.reset()
 
 	def read(self,client):
 		try:
